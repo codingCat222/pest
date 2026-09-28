@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, ArrowRight } from 'lucide-react';
 import { CaseRecord } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 
 interface LoginPageProps {
     currentCase: CaseRecord;
@@ -8,23 +9,19 @@ interface LoginPageProps {
     onNavigate: (page: string) => void;
 }
 
-const DEMO_PASSWORD = 'demo1234';
-const expectedEmail = 'john@gmail.com';
-
-const ADMIN_EMAIL = 'admin@brivent-pest.co.uk';
-const ADMIN_PASSWORD = 'admin1234';
-
 export const LoginPage: React.FC<LoginPageProps> = ({
     currentCase,
     onLoginSuccess,
     onNavigate,
 }) => {
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [refNum, setRefNum] = useState('');
     const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
@@ -35,25 +32,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             return;
         }
 
-        if (normalizedEmail === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-            onLoginSuccess('admin');
-            return;
+        setIsSubmitting(true);
+        try {
+            const user = await login({ email: normalizedEmail, password });
+            onLoginSuccess(user.role === 'ADMIN' ? 'admin' : 'customer');
+        } catch (err: any) {
+            const message = err?.response?.data?.error || 'Incorrect email or password. Please try again.';
+            setError(message);
+        } finally {
+            setIsSubmitting(false);
         }
-
-        if (normalizedEmail === expectedEmail && password === DEMO_PASSWORD) {
-            onLoginSuccess('customer');
-            return;
-        }
-
-        if (
-            normalizedEmail === currentCase.customerEmail.trim().toLowerCase() &&
-            password === DEMO_PASSWORD
-        ) {
-            onLoginSuccess('customer');
-            return;
-        }
-
-        setError('Incorrect email or password. Please try again.');
     };
 
     return (
@@ -126,17 +114,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
                     <button
                         type="submit"
-                        className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        disabled={isSubmitting}
+                        className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                     >
-                        <span>ACCESS MY DASHBOARD</span>
+                        <span>{isSubmitting ? 'SIGNING IN...' : 'ACCESS MY DASHBOARD'}</span>
                         <ArrowRight className="w-4 h-4" />
                     </button>
                 </form>
-
-                <div className="pt-2 border-t border-slate-100 text-xs text-slate-500 space-y-1">
-                    <p>Customer demo: {expectedEmail} / {DEMO_PASSWORD}</p>
-                    <p>Admin demo: {ADMIN_EMAIL} / {ADMIN_PASSWORD}</p>
-                </div>
             </div>
         </div>
     );

@@ -47,6 +47,7 @@ import { AboutUsPage } from './components/pages/AboutUsPage';
 import { ContactPage } from './components/pages/ContactPage';
 import { LegalPage } from './components/pages/LegalPage';
 import { X } from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 // ---------- Public site layout (navbar + footer wrap every public page) ----------
 function PublicLayout({
@@ -369,15 +370,17 @@ function AdminLayout({
 }
 
 // ---------- Root app ----------
-export default function App() {
+function AppRoutes() {
   const [cases, setCases] = useState<CaseRecord[]>(MOCK_CASES);
   const [activeCase, setActiveCase] = useState<CaseRecord>(MOCK_CASES[0]);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [quickReportLevel, setQuickReportLevel] = useState<'No activity' | 'Less activity' | 'Same activity' | 'More activity' | 'Not sure'>('Less activity');
   const [quickReportNotes, setQuickReportNotes] = useState('');
 
-  // Demo-only session state (frontend has no backend auth yet).
-  const [session, setSession] = useState<{ role: 'customer' | 'admin' } | null>(null);
+  const { user, isLoading, logout } = useAuth();
+  const session = user
+    ? { role: (user.role === 'ADMIN' ? 'admin' : 'customer') as 'customer' | 'admin' }
+    : null;
 
   const handleUpdateActiveCase = (updated: CaseRecord) => {
     setActiveCase(updated);
@@ -414,8 +417,16 @@ export default function App() {
     setIsReportModalOpen(false);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-500 text-sm font-semibold">
+        Loading...
+      </div>
+    );
+  }
+
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route
           path="/dashboard/*"
@@ -442,7 +453,7 @@ export default function App() {
                 activeCase={activeCase}
                 setActiveCase={setActiveCase}
                 onUpdateActiveCase={handleUpdateActiveCase}
-                onLogout={() => setSession(null)}
+                onLogout={() => { logout(); }}
               />
             ) : (
               <Navigate to="/login" replace />
@@ -458,7 +469,7 @@ export default function App() {
               setActiveCase={setActiveCase}
               activeCase={activeCase}
               onBookingConfirmed={handleBookingConfirmed}
-              onLoginSuccess={(role) => setSession({ role })}
+              onLoginSuccess={() => { /* navigation handled by LoginPage after real auth */ }}
             />
           }
         />
@@ -499,6 +510,16 @@ export default function App() {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </BrowserRouter>
   );
 }
