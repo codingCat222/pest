@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-green: #15803D;
+  --color-brand-green-dark: #166534;
+  --color-brand-green-light: #4ADE80;
+  --color-brand-purple: #4C1D95;
+  --color-brand-purple-dark: #3B0F7A;
+}
+
 :root {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
-.bg-grid-pattern {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-}
-
 .bg-radial-glow {
   background: radial-gradient(circle at 75% 25%, rgba(59, 130, 246, 0.28), transparent 60%),
-              radial-gradient(circle at 20% 80%, rgba(37, 99, 235, 0.2), transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(37, 99, 235, 0.2), transparent 50%);
 }

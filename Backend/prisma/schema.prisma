@@ -1,7 +1,3 @@
-// This is your Prisma schema file for the Pest Control backend.
-// Database: Microsoft SQL Server
-// Provider: sqlserver
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,383 +7,193 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─────────────────────────────────────────────
-//  Enumerations (mapped to nvarchar in MSSQL)
-// ─────────────────────────────────────────────
-
-enum UserRole {
-  CUSTOMER
-  ADMIN
-  TECHNICIAN
-}
-
-enum CaseStatus {
-  NEW
-  ELIGIBILITY_CHECK
-  PRODUCT_CLAIMED
-  AWAITING_DELIVERY_PAYMENT
-  DELIVERY_PAID
-  DISPATCHED
-  DELIVERED
-  MONITORING
-  ACTIVITY_REPORTED
-  PROFESSIONAL_OFFERED
-  PROFESSIONAL_BOOKED
-  PROFESSIONAL_COMPLETED
-  FOLLOW_UP_MONITORING
-  PROOFING_RECOMMENDED
-  PROOFING_QUOTE_SENT
-  PROOFING_ACCEPTED
-  PROOFING_BOOKED
-  PROOFING_COMPLETED
-  RESOLVED
-  CLOSED
-  CANCELLED
-}
-
-enum PestType {
-  RATS_OR_MICE
-  BEDBUGS
-  COCKROACHES
-  FOXES
-  ANTS
-  OTHER
-  NOT_SURE
-}
-
-enum ActivityLocation {
-  INSIDE_HOME
-  GARAGE
-  LOFT_ROOF_SPACE
-  GARDEN_OUTSIDE
-  COMMERCIAL_PROPERTY
-  OTHER
-}
-
-enum DurationOption {
-  LESS_THAN_A_WEEK
-  ONE_TO_FOUR_WEEKS
-  ONE_TO_THREE_MONTHS
-  LONGER
-}
-
-enum OrderStatus {
-  PREPARING
-  IN_TRANSIT
-  DELIVERED
-  CANCELLED
-}
-
-enum AppointmentStatus {
-  PENDING
-  SCHEDULED
-  COMPLETED
-  CANCELLED
-}
-
-enum QuoteStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-}
-
-enum DocumentCategory {
-  INSTRUCTIONS
-  RECEIPT
-  REPORT
-  QUOTE
-  CERTIFICATE
-}
-
-enum Severity {
-  HIGH
-  MEDIUM
-  LOW
-}
-
-enum ActivityLevel {
-  NO_ACTIVITY
-  LESS_ACTIVITY
-  SAME_ACTIVITY
-  MORE_ACTIVITY
-  NOT_SURE
-}
-
-// ─────────────────────────────────────────────
-//  Core Models
-// ─────────────────────────────────────────────
-
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  passwordHash      String
-  role              UserRole  @default(CUSTOMER)
-  firstName         String
-  lastName          String
-  phone             String?
-  isEmailVerified   Boolean   @default(false)
-  emailVerifyToken  String?
-  resetToken        String?
-  resetTokenExpiry  DateTime?
-  refreshToken      String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  role         String     // "CUSTOMER" | "ADMIN" | "TECHNICIAN"
+  fullName     String
+  phone        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
-  // Relations
-  cases             Case[]
-  notifications     Notification[]
-
-  @@map("users")
+  cases        Case[]
+  auditLogs    AuditLog[]
 }
 
-model Case {
-  id                   String           @id @default(cuid())
-  referenceNumber      String           @unique
-  propertyName         String
-  propertyAddress      String
-  postcode             String
-  pest                 PestType
-  activityLocation     ActivityLocation
-  duration             DurationOption?
-  status               CaseStatus       @default(NEW)
-  monitoringDay        Int              @default(0)
-  monitoringDaysTotal  Int              @default(7)
-  activityReported     ActivityLevel?
-  activityNotes        String?          @db.NVarChar(Max)
-  lastReportedDate     DateTime?
-  technicianName       String?
-  technicianNotes      String?          @db.NVarChar(Max)
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+model Technician {
+  id           String        @id @default(cuid())
+  fullName     String
+  email        String        @unique
+  phone        String?
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
 
-  // Relations
-  customerId           String
-  customer             User             @relation(fields: [customerId], references: [id])
-  product              Product?         @relation(fields: [productId], references: [id])
-  productId            String?
-  order                Order?
-  appointment          Appointment?
-  proofingQuote        ProofingQuote?
-  activityReports      ActivityReport[]
-  timeline             TimelineEvent[]
-  documents            Document[]
-  photos               CasePhoto[]
-  sightings            CaseSighting[]
-
-  @@map("cases")
+  appointments Appointment[]
 }
 
 model Product {
   id            String   @id @default(cuid())
   name          String
   category      String
-  pestTarget    PestType
-  regularPrice  Decimal  @db.Decimal(10, 2)
-  deliveryCost  Decimal  @db.Decimal(10, 2)
+  pestTarget    String
+  regularPrice  Float
+  deliveryCost  Float
   description   String   @db.NVarChar(Max)
+  contents      String   @db.NVarChar(Max) // JSON-encoded string[]
+  instructions  String   @db.NVarChar(Max) // JSON-encoded string[]
+  safetyNotice  String   @db.NVarChar(Max)
   badge         String?
   imageUrl      String?
-  isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  // Relations
-  cases         Case[]
-  productContents  ProductContent[]
-  instructions  ProductInstruction[]
-
-  @@map("products")
 }
 
-model ProductContent {
-  id         String  @id @default(cuid())
-  productId  String
-  item       String
-  sortOrder  Int     @default(0)
-  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+model Case {
+  id                  String    @id @default(cuid())
+  referenceNumber     String    @unique
+  propertyName        String
+  customerName        String
+  customerEmail       String
+  customerPhone       String
+  propertyAddress     String
+  postcode            String
+  pest                String
+  location            String
+  status              String    @default("NEW") // see CaseStatus values in app code
+  productName         String
+  deliveryFee         Float
+  orderDate           DateTime  @default(now())
+  trackingNumber      String?
+  courier             String?
+  monitoringDay       Int       @default(0)
+  monitoringDaysTotal Int       @default(7)
+  activityReported    String?
+  activityNotes       String?   @db.NVarChar(Max)
+  lastReportedDate    DateTime?
 
-  @@map("product_contents")
+  appointmentDate     DateTime?
+  appointmentTime     String?
+  appointmentStatus   String?
+  technicianName      String?
+  technicianNotes     String?   @db.NVarChar(Max)
+
+  userId              String?
+  user                User?     @relation(fields: [userId], references: [id])
+
+  timelineEntries     TimelineEntry[]
+  photos              Photo[]
+  proofingQuote       ProofingQuote?
+  appointments        Appointment[]
+  activityReports     ActivityReport[]
+  orders              Order[]
+  documents           Document[]
+
+  createdAt           DateTime  @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
-model ProductInstruction {
-  id         String  @id @default(cuid())
-  productId  String
-  step       String  @db.NVarChar(Max)
-  sortOrder  Int     @default(0)
-  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@map("product_instructions")
+model TimelineEntry {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  title     String
+  date      DateTime @default(now())
+  completed Boolean  @default(false)
+  current   Boolean  @default(false)
+  details   String?  @db.NVarChar(Max)
+  author    String?
+  createdAt DateTime @default(now())
 }
 
-model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique
-  caseId          String      @unique
-  case            Case        @relation(fields: [caseId], references: [id])
-  productPrice    Decimal     @db.Decimal(10, 2) @default(0)
-  deliveryFee     Decimal     @db.Decimal(10, 2)
-  total           Decimal     @db.Decimal(10, 2)
-  status          OrderStatus @default(PREPARING)
-  carrier         String?
-  trackingNumber  String?
-  placedAt        DateTime    @default(now())
-  deliveredAt     DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  @@map("orders")
-}
-
-model Appointment {
-  id              String            @id @default(cuid())
-  caseId          String            @unique
-  case            Case              @relation(fields: [caseId], references: [id])
-  appointmentDate DateTime
-  appointmentTime String            // e.g. "10:00 AM"
-  status          AppointmentStatus @default(SCHEDULED)
-  technicianName  String?
-  notes           String?           @db.NVarChar(Max)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  @@map("appointments")
+model Photo {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now())
 }
 
 model ActivityReport {
-  id             String        @id @default(cuid())
-  caseId         String
-  case           Case          @relation(fields: [caseId], references: [id])
-  activityLevel  ActivityLevel
-  notes          String?       @db.NVarChar(Max)
-  reportedAt     DateTime      @default(now())
-  photos         ActivityReportPhoto[]
-
-  @@map("activity_reports")
+  id            String   @id @default(cuid())
+  caseId        String
+  case          Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  activityLevel String
+  notes         String?  @db.NVarChar(Max)
+  photoUrl      String?
+  createdAt     DateTime @default(now())
 }
 
-model ActivityReportPhoto {
-  id               String         @id @default(cuid())
-  activityReportId String
-  activityReport   ActivityReport @relation(fields: [activityReportId], references: [id], onDelete: Cascade)
-  url              String
-  filename         String
-  uploadedAt       DateTime       @default(now())
-
-  @@map("activity_report_photos")
-}
-
-model CasePhoto {
-  id         String   @id @default(cuid())
-  caseId     String
-  case       Case     @relation(fields: [caseId], references: [id])
-  url        String
-  filename   String
-  uploadedAt DateTime @default(now())
-
-  @@map("case_photos")
-}
-
-model CaseSighting {
-  id       String @id @default(cuid())
-  caseId   String
-  case     Case   @relation(fields: [caseId], references: [id])
-  sighting String // e.g. "Live rodent", "Droppings", etc.
-
-  @@map("case_sightings")
+model Appointment {
+  id           String      @id @default(cuid())
+  caseId       String
+  case         Case        @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  technicianId String?
+  technician   Technician? @relation(fields: [technicianId], references: [id])
+  date         DateTime
+  time         String
+  status       String      @default("Scheduled")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model ProofingQuote {
-  id                     String      @id @default(cuid())
-  reference              String      @unique
-  caseId                 String      @unique
-  case                   Case        @relation(fields: [caseId], references: [id])
-  description            String      @db.NVarChar(Max)
-  technicianExplanation  String      @db.NVarChar(Max)
-  materials              String?     @db.NVarChar(Max)
-  materialsCost          Decimal?    @db.Decimal(10, 2)
-  labourCost             Decimal?    @db.Decimal(10, 2)
-  subtotal               Decimal?    @db.Decimal(10, 2)
-  vat                    Decimal     @db.Decimal(10, 2)
-  total                  Decimal     @db.Decimal(10, 2)
-  validUntil             DateTime
-  status                 QuoteStatus @default(PENDING)
-  acceptedAt             DateTime?
-  createdAt              DateTime    @default(now())
-  updatedAt              DateTime    @updatedAt
-
-  findings               ProofingFinding[]
-
-  @@map("proofing_quotes")
+  id                    String    @id @default(cuid())
+  caseId                String    @unique
+  case                  Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  reference             String?
+  description           String    @db.NVarChar(Max)
+  technicianExplanation String    @db.NVarChar(Max)
+  findings              String?   @db.NVarChar(Max) // JSON-encoded ProofingFinding[]
+  materials             String?
+  materialsCost         Float?
+  labourCost            Float?
+  subtotal              Float?
+  price                 Float?
+  vat                   Float
+  total                 Float
+  validUntil            DateTime
+  status                String    @default("pending") // "pending" | "accepted" | "declined"
+  acceptedAt            DateTime?
+  createdAt             DateTime  @default(now())
 }
 
-model ProofingFinding {
-  id                String        @id @default(cuid())
-  quoteId           String
-  quote             ProofingQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
-  title             String
-  description       String        @db.NVarChar(Max)
-  recommendedWork   String        @db.NVarChar(Max)
-  imageUrl          String?
-  severity          Severity
-  sortOrder         Int           @default(0)
-
-  @@map("proofing_findings")
-}
-
-model TimelineEvent {
-  id          String   @id @default(cuid())
-  caseId      String
-  case        Case     @relation(fields: [caseId], references: [id])
-  title       String
-  details     String?  @db.NVarChar(Max)
-  author      String?
-  completed   Boolean  @default(false)
-  isCurrent   Boolean  @default(false)
-  eventDate   DateTime @default(now())
-  createdAt   DateTime @default(now())
-
-  @@map("timeline_events")
+model Order {
+  id              String   @id @default(cuid())
+  orderNumber     String   @unique
+  caseId          String
+  case            Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  productName     String
+  productPrice    Float
+  deliveryFee     Float
+  total           Float
+  status          String   @default("Preparing") // "Delivered" | "In Transit" | "Preparing" | "Cancelled"
+  carrier         String?
+  trackingNumber  String?
+  placedDate      DateTime @default(now())
+  deliveryDate    DateTime?
+  propertyAddress String
 }
 
 model Document {
-  id        String           @id @default(cuid())
-  caseId    String
-  case      Case             @relation(fields: [caseId], references: [id])
-  title     String
-  category  DocumentCategory
-  format    String           @default("PDF")
-  url       String
-  filename  String
-  sizeBytes Int?
-  createdAt DateTime         @default(now())
-
-  @@map("documents")
+  id       String   @id @default(cuid())
+  caseId   String
+  case     Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  title    String
+  category String   // "Instructions" | "Receipt" | "Report" | "Quote" | "Certificate"
+  format   String   @default("PDF")
+  date     DateTime @default(now())
+  size     String?
+  fileUrl  String?
 }
 
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  title     String
-  message   String   @db.NVarChar(Max)
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@map("notifications")
-}
-
-model EligibilitySubmission {
-  id               String           @id @default(cuid())
-  pest             PestType
-  activityLocation ActivityLocation
-  duration         DurationOption
-  fullName         String
-  email            String
-  phone            String
-  address          String
-  postcode         String
-  approved         Boolean          @default(false)
-  createdAt        DateTime         @default(now())
-
-  @@map("eligibility_submissions")
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  entityType String
+  entityId   String
+  action     String
+  details    String?  @db.NVarChar(Max)
+  createdAt  DateTime @default(now())
 }

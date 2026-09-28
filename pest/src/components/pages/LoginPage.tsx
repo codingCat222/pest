@@ -9,6 +9,8 @@ interface LoginPageProps {
 }
 
 const DEMO_PASSWORD = 'demo1234';
+const expectedEmail = 'john@gmail.com';
+
 const ADMIN_EMAIL = 'admin@brivent-pest.co.uk';
 const ADMIN_PASSWORD = 'admin1234';
 
@@ -27,7 +29,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         setError('');
 
         const normalizedEmail = email.trim().toLowerCase();
-        const expectedEmail = currentCase.customerEmail.trim().toLowerCase();
 
         if (!normalizedEmail || !password) {
             setError('Please enter both your email and password.');
@@ -40,6 +41,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         }
 
         if (normalizedEmail === expectedEmail && password === DEMO_PASSWORD) {
+            onLoginSuccess('customer');
+            return;
+        }
+
+        if (
+            normalizedEmail === currentCase.customerEmail.trim().toLowerCase() &&
+            password === DEMO_PASSWORD
+        ) {
             onLoginSuccess('customer');
             return;
         }
@@ -125,7 +134,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </form>
 
                 <div className="pt-2 border-t border-slate-100 text-xs text-slate-500 space-y-1">
-                    <p>Customer demo: {currentCase.customerEmail} / {DEMO_PASSWORD}</p>
+                    <p>Customer demo: {expectedEmail} / {DEMO_PASSWORD}</p>
                     <p>Admin demo: {ADMIN_EMAIL} / {ADMIN_PASSWORD}</p>
                 </div>
             </div>

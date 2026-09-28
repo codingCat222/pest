@@ -8,6 +8,7 @@ import {
     CreditCard,
     ShieldAlert,
     BarChart3,
+    ScrollText,
     ChevronDown,
     LogOut,
     User,
@@ -30,6 +31,7 @@ const NAV_ITEMS: { tab: AdminNavTab; label: string; icon: React.ElementType; gro
     { tab: 'payments', label: 'Payments & Orders', icon: CreditCard, group: 'Finance' },
     { tab: 'proofing', label: 'Proofing Quotes', icon: ShieldAlert, group: 'Finance' },
     { tab: 'reports', label: 'Reports & Analytics', icon: BarChart3, group: 'Insights' },
+    { tab: 'audit-log', label: 'Audit Log', icon: ScrollText, group: 'Insights' },
 ];
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({

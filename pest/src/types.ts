@@ -18,7 +18,8 @@ export type AdminNavTab =
   | 'technicians'
   | 'payments'
   | 'proofing'
-  | 'reports';
+  | 'reports'
+  | 'audit-log';
 
 export type NavigationPage =
   | 'home'

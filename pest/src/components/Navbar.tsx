@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Menu, X, ChevronDown, Search } from 'lucide-react';
 import { NavigationPage } from '../types';
 
 interface NavbarProps {
   currentPage?: NavigationPage;
   onNavigate: (page: NavigationPage) => void;
-  onOpenEligibility: () => void;
+  onOpenEligibility: (pest?: string) => void;
   onOpenLogin: () => void;
 }
 
@@ -20,6 +20,8 @@ const SERVICE_LINKS: { page: NavigationPage; label: string }[] = [
   { page: 'ants', label: 'Ants & Other' },
 ];
 
+const SEARCH_PESTS = ['Rats or mice', 'Bedbugs', 'Cockroaches', 'Foxes', 'Ants'];
+
 const SERVICE_PAGES: NavigationPage[] = SERVICE_LINKS.map((l) => l.page);
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -30,38 +32,45 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [searchPest, setSearchPest] = useState(SEARCH_PESTS[0]);
+  const [pestMenuOpen, setPestMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 520);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const isServicesActive = SERVICE_PAGES.includes(currentPage);
 
-  return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+  const linkClass = (active: boolean) =>
+    `whitespace-nowrap transition-colors cursor-pointer ${active ? 'text-brand-green font-semibold' : 'text-brand-purple hover:text-brand-green'
+    }`;
 
+  return (
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-brand-purple/10">
+      <div className="w-full max-w-[1600px] mx-auto px-6 lg:px-10">
+        <div className="flex items-center h-[76px]">
+
+          {/* Logo */}
           <button
             type="button"
             onClick={() => onNavigate('home')}
-            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 cursor-pointer text-left"
+            className="shrink-0 whitespace-nowrap text-xl sm:text-[23px] font-extrabold tracking-tight cursor-pointer text-left"
           >
-            Free Pest Products
+            <span className="text-brand-green">Free Pest</span>{' '}
+            <span className="text-brand-purple">Products</span>
           </button>
 
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-600">
-            <button
-              type="button"
-              onClick={() => onNavigate('home')}
-              className={`transition-colors cursor-pointer ${currentPage === 'home' ? 'text-blue-600 font-semibold' : 'hover:text-slate-950'
-                }`}
-            >
+          {/* Desktop links, stretched across the middle */}
+          <nav className="hidden lg:flex flex-1 items-center justify-center gap-10 xl:gap-12 text-[15px] font-medium px-8">
+            <button type="button" onClick={() => onNavigate('home')} className={linkClass(currentPage === 'home')}>
               Home
             </button>
 
-            <button
-              type="button"
-              onClick={() => onNavigate('how-it-works')}
-              className={`transition-colors cursor-pointer ${currentPage === 'how-it-works' ? 'text-blue-600 font-semibold' : 'hover:text-slate-950'
-                }`}
-            >
+            <button type="button" onClick={() => onNavigate('how-it-works')} className={linkClass(currentPage === 'how-it-works')}>
               How It Works
             </button>
 
@@ -70,26 +79,83 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={() => setServicesOpen((v) => !v)}
                 onMouseEnter={() => setServicesOpen(true)}
-                className={`flex items-center gap-1 transition-colors cursor-pointer ${isServicesActive ? 'text-blue-600 font-semibold' : 'hover:text-slate-950'
-                  }`}
+                className={`flex items-center gap-1 ${linkClass(isServicesActive)}`}
               >
                 <span>Services</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronDown className="w-3.5 h-3.5 opacity-60" />
               </button>
 
               {servicesOpen && (
                 <div
                   onMouseEnter={() => setServicesOpen(true)}
-                  className="absolute top-full left-0 mt-1 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 text-sm"
+                  className="absolute top-full left-0 pt-2 z-50"
                 >
-                  {SERVICE_LINKS.map((link) => (
+                  <div className="w-60 bg-white rounded-xl shadow-xl border border-brand-purple/10 py-2 text-sm">
+                    {SERVICE_LINKS.map((link) => (
+                      <button
+                        key={link.page}
+                        type="button"
+                        onClick={() => { onNavigate(link.page); setServicesOpen(false); }}
+                        className="w-full text-left whitespace-nowrap px-4 py-2 font-medium text-brand-purple hover:bg-brand-green/10 hover:text-brand-green transition-colors"
+                      >
+                        {link.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button type="button" onClick={() => onNavigate('about-us')} className={linkClass(currentPage === 'about-us')}>
+              About
+            </button>
+            <button type="button" onClick={() => onNavigate('contact')} className={linkClass(currentPage === 'contact')}>
+              Contact
+            </button>
+            <button type="button" onClick={() => onNavigate('faqs')} className={linkClass(currentPage === 'faqs')}>
+              FAQ
+            </button>
+          </nav>
+
+          {/* Right side: scroll-reveal search + auth */}
+          <div className="hidden md:flex items-center gap-5 ml-auto lg:ml-0 shrink-0">
+
+            {/* Search pill, fades in after the hero */}
+            <div
+              className={`relative transition-all duration-300 ${scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'
+                }`}
+            >
+              <div className="flex items-center rounded-full border border-brand-purple/20 bg-white shadow-sm pl-4 pr-1 h-11">
+                <Search className="w-4 h-4 text-brand-purple/60 shrink-0" />
+                <button
+                  type="button"
+                  onClick={() => onOpenEligibility(searchPest)}
+                  className="px-3 text-sm whitespace-nowrap text-brand-purple/60 hover:text-brand-purple text-left cursor-pointer"
+                >
+                  Check eligibility
+                </button>
+                <div className="w-px h-6 bg-brand-purple/15" />
+                <button
+                  type="button"
+                  onClick={() => setPestMenuOpen((v) => !v)}
+                  className="flex items-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap text-brand-purple cursor-pointer"
+                >
+                  <span className="w-28 text-left truncate">{searchPest}</span>
+                  <ChevronDown className="w-4 h-4 shrink-0" />
+                </button>
+              </div>
+
+              {pestMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-brand-purple/10 py-2 z-50">
+                  {SEARCH_PESTS.map((pest) => (
                     <button
-                      key={link.page}
+                      key={pest}
                       type="button"
-                      onClick={() => { onNavigate(link.page); setServicesOpen(false); }}
-                      className="w-full text-left px-4 py-2 hover:bg-slate-50 font-medium text-slate-700"
+                      onClick={() => { setSearchPest(pest); setPestMenuOpen(false); }}
+                      className={`w-full text-left whitespace-nowrap px-4 py-2 text-sm font-medium hover:bg-brand-green/10 ${pest === searchPest ? 'text-brand-green' : 'text-brand-purple'
+                        }`}
                     >
-                      {link.label}
+                      {pest}
                     </button>
                   ))}
                 </div>
@@ -98,89 +164,60 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               type="button"
-              onClick={() => onNavigate('about-us')}
-              className={`transition-colors cursor-pointer ${currentPage === 'about-us' ? 'text-blue-600 font-semibold' : 'hover:text-slate-950'
-                }`}
-            >
-              About
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('contact')}
-              className={`transition-colors cursor-pointer ${currentPage === 'contact' ? 'text-blue-600 font-semibold' : 'hover:text-slate-950'
-                }`}
-            >
-              Contact
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('faqs')}
-              className={`transition-colors cursor-pointer ${currentPage === 'faqs' ? 'text-blue-600 font-semibold' : 'hover:text-slate-950'
-                }`}
-            >
-              FAQ
-            </button>
-          </nav>
-
-          <div className="hidden md:flex items-center gap-3">
-            <button
-              type="button"
               onClick={onOpenLogin}
-              className="text-sm font-medium text-slate-600 hover:text-slate-950 transition-colors cursor-pointer px-2"
+              className="whitespace-nowrap text-[15px] font-medium text-brand-purple hover:text-brand-green transition-colors cursor-pointer"
             >
               Log in
             </button>
 
             <button
               type="button"
-              onClick={onOpenEligibility}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-full shadow-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+              onClick={() => onOpenEligibility()}
+              className="bg-brand-green hover:bg-brand-green-dark text-white font-semibold text-[15px] px-7 h-11 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
             >
               Sign up
             </button>
           </div>
 
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile controls */}
+          <div className="flex md:hidden items-center gap-2 ml-auto">
             <button
               type="button"
-              onClick={onOpenEligibility}
-              className="bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full"
+              onClick={() => onOpenEligibility()}
+              className="bg-brand-green text-white text-xs font-semibold px-3.5 py-2 rounded-full whitespace-nowrap"
             >
               Sign up
             </button>
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 text-slate-700 hover:text-slate-950 cursor-pointer"
+              className="p-2 text-brand-purple cursor-pointer"
               aria-label="Toggle navigation menu"
             >
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
-
         </div>
       </div>
 
+      {/* Mobile menu */}
       {mobileOpen && (
-        <div className="lg:hidden bg-white border-t border-slate-100 px-4 py-4 space-y-2 max-h-[80vh] overflow-y-auto">
-          <button
-            type="button"
-            onClick={() => { onNavigate('home'); setMobileOpen(false); }}
-            className="block w-full text-left py-2 text-sm font-medium text-slate-700 hover:text-blue-600"
-          >
-            Home
-          </button>
-          <button
-            type="button"
-            onClick={() => { onNavigate('how-it-works'); setMobileOpen(false); }}
-            className="block w-full text-left py-2 text-sm font-medium text-slate-700 hover:text-blue-600"
-          >
-            How It Works
-          </button>
+        <div className="lg:hidden bg-white border-t border-brand-purple/10 px-4 py-4 space-y-2 max-h-[80vh] overflow-y-auto">
+          {[
+            { page: 'home' as NavigationPage, label: 'Home' },
+            { page: 'how-it-works' as NavigationPage, label: 'How It Works' },
+          ].map((link) => (
+            <button
+              key={link.page}
+              type="button"
+              onClick={() => { onNavigate(link.page); setMobileOpen(false); }}
+              className="block w-full text-left py-2 text-sm font-medium text-brand-purple hover:text-brand-green"
+            >
+              {link.label}
+            </button>
+          ))}
 
-          <div className="py-1 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="py-1 px-2 text-[10px] font-bold uppercase tracking-wider text-brand-purple/50">
             Services
           </div>
           <div className="grid grid-cols-2 gap-1 pl-2">
@@ -189,47 +226,40 @@ export const Navbar: React.FC<NavbarProps> = ({
                 key={link.page}
                 type="button"
                 onClick={() => { onNavigate(link.page); setMobileOpen(false); }}
-                className="text-left py-1 text-xs text-slate-600"
+                className="text-left py-1.5 text-xs text-brand-purple/80 hover:text-brand-green"
               >
-                • {link.label}
+                {link.label}
               </button>
             ))}
           </div>
 
-          <button
-            type="button"
-            onClick={() => { onNavigate('about-us'); setMobileOpen(false); }}
-            className="block w-full text-left py-2 text-sm font-medium text-slate-700 hover:text-blue-600"
-          >
-            About
-          </button>
-          <button
-            type="button"
-            onClick={() => { onNavigate('contact'); setMobileOpen(false); }}
-            className="block w-full text-left py-2 text-sm font-medium text-slate-700 hover:text-blue-600"
-          >
-            Contact
-          </button>
-          <button
-            type="button"
-            onClick={() => { onNavigate('faqs'); setMobileOpen(false); }}
-            className="block w-full text-left py-2 text-sm font-medium text-slate-700 hover:text-blue-600"
-          >
-            FAQ
-          </button>
+          {[
+            { page: 'about-us' as NavigationPage, label: 'About' },
+            { page: 'contact' as NavigationPage, label: 'Contact' },
+            { page: 'faqs' as NavigationPage, label: 'FAQ' },
+          ].map((link) => (
+            <button
+              key={link.page}
+              type="button"
+              onClick={() => { onNavigate(link.page); setMobileOpen(false); }}
+              className="block w-full text-left py-2 text-sm font-medium text-brand-purple hover:text-brand-green"
+            >
+              {link.label}
+            </button>
+          ))}
 
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <div className="pt-3 border-t border-brand-purple/10 flex items-center justify-between">
             <button
               type="button"
               onClick={() => { onOpenLogin(); setMobileOpen(false); }}
-              className="text-sm font-semibold text-slate-700"
+              className="text-sm font-semibold text-brand-purple"
             >
               Log in
             </button>
             <button
               type="button"
               onClick={() => { onOpenEligibility(); setMobileOpen(false); }}
-              className="text-xs font-bold text-blue-600"
+              className="text-xs font-bold text-brand-green"
             >
               Sign up →
             </button>
