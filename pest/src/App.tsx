@@ -6,7 +6,6 @@ import {
   CaseRecord,
   PestType,
 } from './types';
-import { MOCK_ORDERS, INITIAL_PRODUCTS } from './data/mockData';
 import { CustomerSidebar } from './components/dashboard/CustomerSidebar';
 import { CustomerTopHeader } from './components/dashboard/CustomerTopHeader';
 import { DashboardOverview } from './components/dashboard/DashboardOverview';
@@ -70,6 +69,7 @@ function EmptyDashboard() {
   );
 }
 
+// ---------- Public site layout (navbar + footer wrap every public page) ----------
 function PublicLayout({
   cases,
   setCases,
@@ -320,6 +320,7 @@ function AdminLayout({
   onUpdateActiveCase,
   onCaseCreated,
   onLogout,
+  onCasesChanged,
 }: {
   cases: CaseRecord[];
   activeCase: CaseRecord | null;
@@ -327,6 +328,7 @@ function AdminLayout({
   onUpdateActiveCase: (c: CaseRecord) => void;
   onCaseCreated: (c: CaseRecord) => void;
   onLogout: () => void;
+  onCasesChanged: () => void;
 }) {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -377,15 +379,15 @@ function AdminLayout({
                 />
               }
             />
-            <Route path="/products" element={<AdminProductsView products={INITIAL_PRODUCTS} />} />
-            <Route path="/technicians" element={<AdminTechniciansView cases={cases} />} />
-            <Route path="/payments" element={<AdminPaymentsView orders={MOCK_ORDERS} />} />
+            <Route path="/products" element={<AdminProductsView />} />
+            <Route path="/technicians" element={<AdminTechniciansView cases={cases} onCasesChanged={onCasesChanged} />} />
+            <Route path="/payments" element={<AdminPaymentsView />} />
             <Route
               path="/proofing"
-              element={<AdminProofingView cases={cases} onSelectCase={setActiveCase} />}
+              element={<AdminProofingView cases={cases} onSelectCase={setActiveCase} onCasesChanged={onCasesChanged} />}
             />
             <Route path="/audit-log" element={<AdminAuditLogView cases={cases} />} />
-            <Route path="/reports" element={<AdminReportsView cases={cases} orders={MOCK_ORDERS} />} />
+            <Route path="/reports" element={<AdminReportsView cases={cases} />} />
           </Routes>
         </main>
       </div>
@@ -461,7 +463,18 @@ function AppRoutes() {
     setCasesStatus('loading');
     setCasesError(null);
 
-    CasesService.list()
+    const load = async () => {
+      let fetched = await CasesService.list();
+      const pending = sessionStorage.getItem('pendingCase');
+      if (pending) {
+        sessionStorage.removeItem('pendingCase');
+        const created = await CasesService.create(JSON.parse(pending));
+        fetched = [created, ...fetched];
+      }
+      return fetched;
+    };
+
+    load()
       .then((fetched) => {
         if (cancelled) return;
         setCases(fetched);
@@ -478,6 +491,12 @@ function AppRoutes() {
       cancelled = true;
     };
   }, [user?.id]);
+
+  const reloadCases = async () => {
+    const fetched = await CasesService.list();
+    setCases(fetched);
+    setActiveCase((prev) => fetched.find((c) => c.id === prev?.id) ?? fetched[0] ?? null);
+  };
 
   const handleUpdateActiveCase = (updated: CaseRecord) => {
     setActiveCase(updated);
@@ -552,6 +571,7 @@ function AppRoutes() {
                 onUpdateActiveCase={handleUpdateActiveCase}
                 onCaseCreated={handleCaseCreated}
                 onLogout={() => { logout(); }}
+                onCasesChanged={reloadCases}
               />
             ) : (
               <Navigate to="/login" replace />

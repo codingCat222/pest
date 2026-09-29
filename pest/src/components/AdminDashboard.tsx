@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { CaseRecord, CaseStatus, NavigationPage } from '../types';
-import { 
-  ShieldAlert, 
-  ArrowLeft, 
-  TrendingUp, 
-  Package, 
-  CreditCard, 
-  CheckCircle2, 
-  Filter, 
-  UserCheck, 
-  Layers, 
+import {
+  ShieldAlert,
+  ArrowLeft,
+  TrendingUp,
+  Package,
+  CreditCard,
+  CheckCircle2,
+  Filter,
+  UserCheck,
+  Layers,
   Eye,
   RefreshCw
 } from 'lucide-react';
@@ -48,7 +48,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="py-8 bg-slate-100 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <div className="text-[11px] font-bold uppercase text-slate-400">£99 Bookings</div>
+            <div className="text-[11px] font-bold uppercase text-slate-400">£95.99 Bookings</div>
             <div className="text-2xl font-black text-purple-600 mt-0.5">94</div>
             <div className="text-[10px] text-emerald-600 font-semibold mt-1">£9,306 revenue</div>
           </div>
@@ -265,7 +265,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               >
                 <option value="MONITORING">MONITORING (Customer 7-day period)</option>
                 <option value="ACTIVITY_REPORTED">ACTIVITY_REPORTED (Customer reported activity)</option>
-                <option value="PROFESSIONAL_BOOKED">PROFESSIONAL_BOOKED (£99 visit booked)</option>
+                <option value="PROFESSIONAL_BOOKED">PROFESSIONAL_BOOKED (£95.99 visit booked)</option>
                 <option value="PROFESSIONAL_COMPLETED">PROFESSIONAL_COMPLETED (Visit finished)</option>
                 <option value="PROOFING_RECOMMENDED">PROOFING_RECOMMENDED (Quote pending customer)</option>
                 <option value="PROOFING_ACCEPTED">PROOFING_ACCEPTED (Works approved)</option>

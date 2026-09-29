@@ -13,7 +13,7 @@ export const ProofingPage: React.FC<ProofingPageProps> = ({
   return (
     <div className="py-12 bg-slate-50 min-h-screen">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-16">
-        
+
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="text-xs font-bold text-blue-600 uppercase tracking-widest">
             PAGE 6 — PROOFING
@@ -105,7 +105,7 @@ export const ProofingPage: React.FC<ProofingPageProps> = ({
             Ready to secure your property?
           </h3>
           <p className="text-slate-300 text-sm max-w-xl mx-auto">
-            Start with our free product assessment. If activity persists, our £99 professional inspection includes entry point diagnosis.
+            Start with our free product assessment. If activity persists, our £95.99 professional inspection includes entry point diagnosis.
           </p>
           <div className="pt-4 flex flex-col sm:flex-row justify-center gap-3">
             <button
@@ -118,7 +118,7 @@ export const ProofingPage: React.FC<ProofingPageProps> = ({
               onClick={onBookProfessional}
               className="px-7 py-3.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition-all border border-slate-700"
             >
-              BOOK £99 VISIT
+              BOOK £95.99 VISIT
             </button>
           </div>
         </div>

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { CaseRecord, CaseStatus, PortalPersona } from '../../types';
-import { 
-  Building2, 
-  Search, 
-  Filter, 
-  TrendingUp, 
-  Package, 
-  Calendar, 
-  CheckCircle2, 
-  ShieldAlert, 
-  ArrowLeft, 
+import {
+  Building2,
+  Search,
+  Filter,
+  TrendingUp,
+  Package,
+  Calendar,
+  CheckCircle2,
+  ShieldAlert,
+  ArrowLeft,
   RefreshCw,
   ExternalLink,
   Wrench
@@ -53,7 +53,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     setTimeout(() => setStatusUpdated(false), 2500);
   };
 
-  const filteredCases = cases.filter(c => 
+  const filteredCases = cases.filter(c =>
     c.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.referenceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.propertyAddress.toLowerCase().includes(searchQuery.toLowerCase())
@@ -61,7 +61,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
-      
+
       <header className="bg-slate-900 text-white px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold">
@@ -85,7 +85,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       </header>
 
       <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -121,7 +121,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
-            <div className="text-[10px] font-bold uppercase text-slate-400">£99 Bookings</div>
+            <div className="text-[10px] font-bold uppercase text-slate-400">£95.99 Bookings</div>
             <div className="text-2xl font-black text-blue-600 mt-0.5 font-mono">94</div>
             <div className="text-[10px] text-slate-500 mt-1">£9,306 collected</div>
           </div>
@@ -155,7 +155,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </div>
             <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900">
               <div className="font-bold text-lg">94</div>
-              <div className="text-[11px]">£99 Pro Treatment</div>
+              <div className="text-[11px]">£95.99 Pro Treatment</div>
             </div>
             <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 text-purple-900">
               <div className="font-bold text-lg">38</div>
@@ -169,7 +169,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
+
           <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <h2 className="text-lg font-bold text-slate-900">
@@ -200,11 +200,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredCases.map((c) => (
-                    <tr 
-                      key={c.id} 
-                      className={`hover:bg-slate-50 transition-colors cursor-pointer ${
-                        c.id === activeCase.id ? 'bg-purple-50/50' : ''
-                      }`}
+                    <tr
+                      key={c.id}
+                      className={`hover:bg-slate-50 transition-colors cursor-pointer ${c.id === activeCase.id ? 'bg-purple-50/50' : ''
+                        }`}
                       onClick={() => onSelectCase(c)}
                     >
                       <td className="py-3 px-3 font-mono font-bold text-slate-900">
@@ -249,7 +248,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               <div className="font-bold text-purple-950 text-[11px] uppercase tracking-wider">
                 Workflow Stage Override
               </div>
-              
+
               <select
                 value={selectedStatusOverride}
                 onChange={(e) => setSelectedStatusOverride(e.target.value as CaseStatus)}
@@ -257,7 +256,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               >
                 <option value="MONITORING">MONITORING (7-Day Check-in)</option>
                 <option value="ACTIVITY_REPORTED">ACTIVITY_REPORTED (Needs Callout)</option>
-                <option value="PROFESSIONAL_BOOKED">PROFESSIONAL_BOOKED (£99 Active)</option>
+                <option value="PROFESSIONAL_BOOKED">PROFESSIONAL_BOOKED (£95.99 Active)</option>
                 <option value="PROFESSIONAL_COMPLETED">PROFESSIONAL_COMPLETED</option>
                 <option value="PROOFING_RECOMMENDED">PROOFING_RECOMMENDED (Quote Sent)</option>
                 <option value="PROOFING_ACCEPTED">PROOFING_ACCEPTED (Works Approved)</option>

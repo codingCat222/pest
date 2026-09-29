@@ -9,7 +9,11 @@ export const AdminPaymentsController = {
       const [awaitingPayment, paid, orders] = await Promise.all([
         prisma.case.findMany({ where: { status: 'AWAITING_DELIVERY_PAYMENT' } }),
         prisma.case.findMany({ where: { status: 'DELIVERY_PAID' } }),
-        prisma.order.findMany({ orderBy: { placedDate: 'desc' }, take: 50 }),
+        prisma.order.findMany({
+          orderBy: { placedDate: 'desc' },
+          take: 50,
+          include: { case: { select: { referenceNumber: true } } },
+        }),
       ]);
       res.json({ awaitingPayment, paid, recentOrders: orders });
     } catch (err: any) {

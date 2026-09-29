@@ -10,10 +10,10 @@ export const AdminCasesController = {
           status: status || undefined,
           OR: search
             ? [
-                { referenceNumber: { contains: search } },
-                { customerName: { contains: search } },
-                { customerEmail: { contains: search } },
-              ]
+              { referenceNumber: { contains: search } },
+              { customerName: { contains: search } },
+              { customerEmail: { contains: search } },
+            ]
             : undefined,
         },
         include: { timelineEntries: true, user: { select: { id: true, fullName: true, email: true } } },
@@ -50,10 +50,23 @@ export const AdminCasesController = {
   async reassignTechnician(req: Request, res: Response) {
     try {
       const { appointmentId, technicianId } = req.body;
+      const technician = await prisma.technician.findUnique({ where: { id: technicianId } });
+      if (!technician || !technician.active) {
+        return res.status(400).json({ error: 'Technician not found or inactive' });
+      }
       const appointment = await prisma.appointment.update({
         where: { id: appointmentId },
         data: { technicianId },
         include: { technician: true },
+      });
+      await prisma.case.update({
+        where: { id: appointment.caseId },
+        data: {
+          technicianName: technician.fullName,
+          timelineEntries: {
+            create: [{ title: 'Technician Assigned', completed: true, details: `${technician.fullName} will attend your appointment.` }],
+          },
+        },
       });
       res.json(appointment);
     } catch (err: any) {

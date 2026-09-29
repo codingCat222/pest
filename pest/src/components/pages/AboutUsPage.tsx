@@ -35,7 +35,7 @@ export const AboutUsPage: React.FC<AboutUsPageProps> = ({ onStartEligibility }) 
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
               <span className="font-bold text-slate-900 block text-base mb-1">03. Get professional help when needed</span>
-              <p className="text-xs text-slate-600">If activity continues, book our certified technician for a flat transparent £99.</p>
+              <p className="text-xs text-slate-600">If activity continues, book our certified technician for a flat transparent £95.99.</p>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
               <span className="font-bold text-slate-900 block text-base mb-1">04. Address the underlying cause</span>

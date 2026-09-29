@@ -405,7 +405,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 </>
               ) : (
                 <div className="text-xs text-brand-purple-soft mt-1">
-                  £99 professional inspection available if needed after monitoring.
+                  £95.99 professional inspection available if needed after monitoring.
                 </div>
               )}
             </div>
@@ -416,7 +416,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               onClick={() => (activeCase.appointmentDate ? onNavigateTab('appointments') : onOpenBookingModal())}
               className="text-xs font-bold text-brand-green hover:text-brand-green-dark inline-flex items-center gap-1 cursor-pointer"
             >
-              <span>{activeCase.appointmentDate ? 'View Appointment' : 'Book for £99'}</span>
+              <span>{activeCase.appointmentDate ? 'View Appointment' : 'Book for £95.99'}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>

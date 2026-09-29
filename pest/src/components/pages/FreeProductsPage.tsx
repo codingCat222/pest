@@ -1,5 +1,6 @@
-import React from 'react';
-import { INITIAL_PRODUCTS } from '../../data/mockData';
+import React, { useEffect, useState } from 'react';
+import { ProductItem } from '../../types';
+import { ProductsService } from '../../services/products';
 import { ArrowRight, CheckCircle2, ShieldCheck, AlertCircle, Package } from 'lucide-react';
 
 interface FreeProductsPageProps {
@@ -7,10 +8,23 @@ interface FreeProductsPageProps {
 }
 
 export const FreeProductsPage: React.FC<FreeProductsPageProps> = ({ onStartEligibility }) => {
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    ProductsService.list()
+      .then((data) => { if (!cancelled) setProducts(data); })
+      .catch(() => { if (!cancelled) setError('Unable to load our products right now. Please try again shortly.'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div className="py-12 bg-slate-50 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-16">
-        
+
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="text-xs font-bold text-blue-600 uppercase tracking-widest">
             PAGE 3 — FREE PEST-CONTROL PRODUCTS
@@ -33,8 +47,13 @@ export const FreeProductsPage: React.FC<FreeProductsPageProps> = ({ onStartEligi
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {INITIAL_PRODUCTS.map((prod) => (
-            <div 
+          {loading && <p className="col-span-full text-center text-sm text-slate-500">Loading products...</p>}
+          {!loading && error && <p className="col-span-full text-center text-sm font-semibold text-red-600">{error}</p>}
+          {!loading && !error && products.length === 0 && (
+            <p className="col-span-full text-center text-sm text-slate-500">No products are available at the moment.</p>
+          )}
+          {products.map((prod) => (
+            <div
               key={prod.id}
               className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col justify-between"
             >
@@ -101,7 +120,7 @@ export const FreeProductsPage: React.FC<FreeProductsPageProps> = ({ onStartEligi
               Simple. We want to help people take the first step without immediately committing to a professional visit.
             </p>
             <p className="text-sm text-slate-600 leading-relaxed">
-              If the product works, you've solved the immediate problem at minimal expense. If activity continues, we have a professional next step ready: a certified inspection for a flat £99.
+              If the product works, you've solved the immediate problem at minimal expense. If activity continues, we have a professional next step ready: a certified inspection for a flat £95.99.
             </p>
           </div>
 

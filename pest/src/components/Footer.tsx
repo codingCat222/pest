@@ -71,7 +71,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li><button type="button" onClick={() => onNavigate('about-us')} className={linkClass}>About Us</button></li>
               <li><button type="button" onClick={() => onNavigate('faqs')} className={linkClass}>FAQs</button></li>
               <li><button type="button" onClick={() => onNavigate('contact')} className={linkClass}>Contact</button></li>
-              <li><button type="button" onClick={onOpenBooking} className={linkClass}>Book £99 Visit</button></li>
+              <li><button type="button" onClick={onOpenBooking} className={linkClass}>Book £95.99 Visit</button></li>
             </ul>
           </div>
 

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authGuard } from '../../common/guards/auth.guard';
 import { requireRole } from '../../common/guards/roles.guard';
+import { auditLog } from '../../common/interceptors/audit-log.interceptor';
 import { AdminOverviewController } from './admin-overview.controller';
 import { AdminCasesController } from './admin-cases.controller';
 import { AdminProductsController } from './admin-products.controller';
@@ -20,19 +21,19 @@ router.get('/overview', AdminOverviewController.get);
 
 router.get('/cases', AdminCasesController.list);
 router.get('/cases/:id', AdminCasesController.getOne);
-router.post('/cases/reassign-technician', AdminCasesController.reassignTechnician);
+router.post('/cases/reassign-technician', auditLog('Appointment', 'REASSIGN_TECHNICIAN'), AdminCasesController.reassignTechnician);
 
 router.get('/products', AdminProductsController.list);
-router.post('/products', AdminProductsController.create);
-router.patch('/products/:id', AdminProductsController.update);
-router.delete('/products/:id', AdminProductsController.remove);
+router.post('/products', auditLog('Product', 'CREATE'), AdminProductsController.create);
+router.patch('/products/:id', auditLog('Product', 'UPDATE'), AdminProductsController.update);
+router.delete('/products/:id', auditLog('Product', 'DELETE'), AdminProductsController.remove);
 
 router.get('/technicians', AdminTechniciansController.list);
-router.post('/technicians', AdminTechniciansController.create);
-router.patch('/technicians/:id', AdminTechniciansController.update);
+router.post('/technicians', auditLog('Technician', 'CREATE'), AdminTechniciansController.create);
+router.patch('/technicians/:id', auditLog('Technician', 'UPDATE'), AdminTechniciansController.update);
 
 router.get('/proofing/pending', AdminProofingController.listPending);
-router.post('/proofing', AdminProofingController.create);
+router.post('/proofing', auditLog('ProofingQuote', 'CREATE'), AdminProofingController.create);
 
 router.get('/payments', AdminPaymentsController.list);
 

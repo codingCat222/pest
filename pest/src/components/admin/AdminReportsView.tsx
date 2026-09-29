@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { CaseRecord, OrderItemRecord } from '../../types';
 import {
     BarChart,
@@ -11,202 +11,168 @@ import {
     Cell,
     LabelList,
 } from 'recharts';
+import { AdminService } from '../../services/admin';
+import { OrdersService } from '../../services/orders';
+import { apiErrorMessage } from '../../services/format';
 
 interface AdminReportsViewProps {
     cases: CaseRecord[];
-    orders: OrderItemRecord[];
 }
-
-// Illustrative platform-wide funnel — represents what a live funnel looks like at scale.
-// Not derived from the small local case sample below; the two are shown separately.
-const ILLUSTRATIVE_FUNNEL = [
-    { stage: 'Leads', value: 1482 },
-    { stage: 'Free Product Claimed', value: 834 },
-    { stage: 'Delivery Paid', value: 780 },
-    { stage: 'Product Delivered', value: 690 },
-    { stage: 'Monitoring', value: 312 },
-    { stage: 'Continued Activity', value: 140 },
-    { stage: '£99 Booking', value: 94 },
-    { stage: 'Proofing Recommended', value: 38 },
-    { stage: 'Proofing Sold', value: 26 },
-    { stage: 'Case Resolved', value: 510 },
-];
 
 const FUNNEL_COLOR = '#2563eb';
 
-export const AdminReportsView: React.FC<AdminReportsViewProps> = ({ cases, orders }) => {
-    // Real, local-session figures derived from actual case/order data in this environment.
-    const realClaimed = cases.length;
-    const realDeliveryPaid = orders.filter((o) => o.status !== 'Cancelled').length;
-    const realDelivered = orders.filter((o) => o.status === 'Delivered').length;
-    const realMonitoring = cases.filter((c) => c.status === 'MONITORING').length;
-    const realContinuedActivity = cases.filter((c) =>
-        ['ACTIVITY_REPORTED', 'PROFESSIONAL_OFFERED'].includes(c.status)
-    ).length;
-    const realProBooked = cases.filter((c) => c.status === 'PROFESSIONAL_BOOKED').length;
-    const realProofingRecommended = cases.filter((c) =>
-        ['PROOFING_RECOMMENDED', 'PROOFING_QUOTE_SENT'].includes(c.status)
-    ).length;
-    const realProofingSold = cases.filter((c) => c.proofingQuote?.status === 'accepted').length;
-    const realResolved = cases.filter((c) => ['RESOLVED', 'CLOSED'].includes(c.status)).length;
+const tooltipStyle = {
+    borderRadius: 12,
+    border: '1px solid #e2e8f0',
+    fontSize: 12,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+};
 
-    const realFunnelData = [
-        { stage: 'Claimed', value: realClaimed },
-        { stage: 'Delivery Paid', value: realDeliveryPaid },
-        { stage: 'Delivered', value: realDelivered },
-        { stage: 'Monitoring', value: realMonitoring },
-        { stage: 'Continued Activity', value: realContinuedActivity },
-        { stage: '£99 Booking', value: realProBooked },
-        { stage: 'Proofing Rec.', value: realProofingRecommended },
-        { stage: 'Proofing Sold', value: realProofingSold },
-        { stage: 'Resolved', value: realResolved },
+const percent = (part: number, whole: number) => (whole > 0 ? `${((part / whole) * 100).toFixed(0)}%` : '—');
+
+export const AdminReportsView: React.FC<AdminReportsViewProps> = ({ cases }) => {
+    const [orders, setOrders] = useState<OrderItemRecord[]>([]);
+    const [revenueByMonth, setRevenueByMonth] = useState<{ month: string; revenue: number }[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all([OrdersService.list(), AdminService.getRevenueByMonth()])
+            .then(([orderList, monthly]) => {
+                if (cancelled) return;
+                setOrders(orderList);
+                setRevenueByMonth(
+                    Object.entries(monthly)
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .map(([month, revenue]) => ({ month, revenue }))
+                );
+            })
+            .catch((err) => {
+                if (!cancelled) setError(apiErrorMessage(err, 'Unable to load report data.'));
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const claimed = cases.length;
+    const deliveryPaid = orders.filter((o) => o.status !== 'Cancelled').length;
+    const delivered = orders.filter((o) => o.status === 'Delivered').length;
+    const monitoring = cases.filter((c) => c.status === 'MONITORING').length;
+    const continuedActivity = cases.filter((c) => ['ACTIVITY_REPORTED', 'PROFESSIONAL_OFFERED'].includes(c.status)).length;
+    const proBooked = cases.filter((c) => c.status === 'PROFESSIONAL_BOOKED').length;
+    const proofingRecommended = cases.filter((c) => ['PROOFING_RECOMMENDED', 'PROOFING_QUOTE_SENT'].includes(c.status)).length;
+    const proofingSold = cases.filter((c) => c.proofingQuote?.status === 'accepted').length;
+    const resolved = cases.filter((c) => ['RESOLVED', 'CLOSED'].includes(c.status)).length;
+
+    const funnelData = [
+        { stage: 'Claimed', value: claimed },
+        { stage: 'Delivery Paid', value: deliveryPaid },
+        { stage: 'Delivered', value: delivered },
+        { stage: 'Monitoring', value: monitoring },
+        { stage: 'Continued Activity', value: continuedActivity },
+        { stage: '£95.99 Booking', value: proBooked },
+        { stage: 'Proofing Rec.', value: proofingRecommended },
+        { stage: 'Proofing Sold', value: proofingSold },
+        { stage: 'Resolved', value: resolved },
     ];
 
-    const revenue = orders.reduce((sum, o) => (o.status !== 'Cancelled' ? sum + o.total : sum), 0);
+    const deliveryRevenue = orders.reduce((sum, o) => (o.status !== 'Cancelled' ? sum + o.total : sum), 0);
     const proofingRevenue = cases
         .filter((c) => c.proofingQuote?.status === 'accepted')
         .reduce((sum, c) => sum + (c.proofingQuote?.total || 0), 0);
-
-    const illustrativeLeads = ILLUSTRATIVE_FUNNEL[0].value;
-    const illustrativeClaimed = ILLUSTRATIVE_FUNNEL[1].value;
-    const illustrativeResolved = ILLUSTRATIVE_FUNNEL[ILLUSTRATIVE_FUNNEL.length - 1].value;
 
     return (
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight">Reports &amp; Analytics</h1>
-                <p className="text-xs text-slate-500 mt-0.5">Success funnel and revenue overview</p>
+                <p className="text-xs text-slate-500 mt-0.5">Live figures from your cases and orders</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
-                    <div className="text-[10px] font-bold uppercase text-slate-400">Delivery Revenue</div>
-                    <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">£{revenue.toFixed(2)}</div>
-                    <div className="text-[10px] text-slate-400 mt-1">This session</div>
-                </div>
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
-                    <div className="text-[10px] font-bold uppercase text-slate-400">Proofing Revenue</div>
-                    <div className="text-xl font-black text-emerald-600 mt-0.5 font-mono">£{proofingRevenue.toFixed(2)}</div>
-                    <div className="text-[10px] text-slate-400 mt-1">This session</div>
-                </div>
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
-                    <div className="text-[10px] font-bold uppercase text-slate-400">Lead → Claim Rate</div>
-                    <div className="text-xl font-black text-blue-600 mt-0.5 font-mono">
-                        {((illustrativeClaimed / illustrativeLeads) * 100).toFixed(0)}%
-                    </div>
-                    <div className="text-[10px] text-slate-400 mt-1">Illustrative platform figure</div>
-                </div>
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
-                    <div className="text-[10px] font-bold uppercase text-slate-400">Overall Resolution Rate</div>
-                    <div className="text-xl font-black text-blue-600 mt-0.5 font-mono">
-                        {((illustrativeResolved / illustrativeLeads) * 100).toFixed(0)}%
-                    </div>
-                    <div className="text-[10px] text-slate-400 mt-1">Illustrative platform figure</div>
-                </div>
-            </div>
+            {loading && <div className="text-center py-12 text-slate-400 text-sm">Loading reports...</div>}
+            {!loading && error && <div className="text-center py-12 text-red-600 text-sm font-semibold">{error}</div>}
 
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-5">
-                <div>
-                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Illustrative Success Funnel
+            {!loading && !error && (
+                <>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+                            <div className="text-[10px] font-bold uppercase text-slate-400">Delivery Revenue</div>
+                            <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">£{deliveryRevenue.toFixed(2)}</div>
+                            <div className="text-[10px] text-slate-400 mt-1">{orders.length} order{orders.length === 1 ? '' : 's'}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+                            <div className="text-[10px] font-bold uppercase text-slate-400">Proofing Revenue</div>
+                            <div className="text-xl font-black text-emerald-600 mt-0.5 font-mono">£{proofingRevenue.toFixed(2)}</div>
+                            <div className="text-[10px] text-slate-400 mt-1">{proofingSold} accepted</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+                            <div className="text-[10px] font-bold uppercase text-slate-400">Claim → Delivered</div>
+                            <div className="text-xl font-black text-blue-600 mt-0.5 font-mono">{percent(delivered, claimed)}</div>
+                            <div className="text-[10px] text-slate-400 mt-1">{delivered} of {claimed} cases</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+                            <div className="text-[10px] font-bold uppercase text-slate-400">Resolution Rate</div>
+                            <div className="text-xl font-black text-blue-600 mt-0.5 font-mono">{percent(resolved, claimed)}</div>
+                            <div className="text-[10px] text-slate-400 mt-1">{resolved} of {claimed} cases</div>
+                        </div>
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                        Shows what a live funnel looks like at platform scale — not derived from local case data.
-                    </p>
-                </div>
 
-                <div style={{ height: ILLUSTRATIVE_FUNNEL.length * 34 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                            data={ILLUSTRATIVE_FUNNEL}
-                            layout="vertical"
-                            margin={{ top: 0, right: 40, left: 8, bottom: 0 }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                            <XAxis type="number" hide />
-                            <YAxis
-                                type="category"
-                                dataKey="stage"
-                                width={140}
-                                tick={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
-                                tickLine={false}
-                                axisLine={false}
-                            />
-                            <Tooltip
-                                cursor={{ fill: '#f8fafc' }}
-                                contentStyle={{
-                                    borderRadius: 12,
-                                    border: '1px solid #e2e8f0',
-                                    fontSize: 12,
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-                                }}
-                                formatter={(value: any) => [Number(value).toLocaleString(), 'Count']}
-                            />
-                            <Bar dataKey="value" fill={FUNNEL_COLOR} radius={[0, 6, 6, 0]} maxBarSize={18}>
-                                <LabelList
-                                    dataKey="value"
-                                    position="right"
-                                    style={{ fontSize: 11, fontWeight: 700, fill: '#0f172a' }}
-                                    formatter={(v: any) => Number(v).toLocaleString()}
-                                />
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
-
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-5">
-                <div>
-                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        This Session&apos;s Case Breakdown
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-5">
+                        <div>
+                            <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Case Funnel</div>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                                Based on {claimed} case{claimed === 1 ? '' : 's'} and {orders.length} order{orders.length === 1 ? '' : 's'}.
+                            </p>
+                        </div>
+                        <div style={{ height: funnelData.length * 34 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={funnelData} layout="vertical" margin={{ top: 0, right: 40, left: 8, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                                    <XAxis type="number" allowDecimals={false} hide />
+                                    <YAxis
+                                        type="category"
+                                        dataKey="stage"
+                                        width={140}
+                                        tick={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={tooltipStyle} formatter={(value: any) => [value, 'Cases']} />
+                                    <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={18}>
+                                        {funnelData.map((d) => (
+                                            <Cell key={d.stage} fill={FUNNEL_COLOR} fillOpacity={0.75} />
+                                        ))}
+                                        <LabelList dataKey="value" position="right" style={{ fontSize: 11, fontWeight: 700, fill: '#0f172a' }} />
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                        Real counts from the {cases.length} case{cases.length === 1 ? '' : 's'} and {orders.length} order
-                        {orders.length === 1 ? '' : 's'} currently loaded.
-                    </p>
-                </div>
 
-                <div style={{ height: realFunnelData.length * 34 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                            data={realFunnelData}
-                            layout="vertical"
-                            margin={{ top: 0, right: 40, left: 8, bottom: 0 }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                            <XAxis type="number" allowDecimals={false} hide />
-                            <YAxis
-                                type="category"
-                                dataKey="stage"
-                                width={140}
-                                tick={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
-                                tickLine={false}
-                                axisLine={false}
-                            />
-                            <Tooltip
-                                cursor={{ fill: '#f8fafc' }}
-                                contentStyle={{
-                                    borderRadius: 12,
-                                    border: '1px solid #e2e8f0',
-                                    fontSize: 12,
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-                                }}
-                                formatter={(value: any) => [value, 'Cases']}
-                            />
-                            <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={18}>
-                                {realFunnelData.map((d) => (
-                                    <Cell key={d.stage} fill={FUNNEL_COLOR} fillOpacity={0.75} />
-                                ))}
-                                <LabelList
-                                    dataKey="value"
-                                    position="right"
-                                    style={{ fontSize: 11, fontWeight: 700, fill: '#0f172a' }}
-                                />
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-5">
+                        <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Revenue by Month</div>
+                        {revenueByMonth.length === 0 ? (
+                            <p className="text-sm text-slate-400">No revenue recorded yet.</p>
+                        ) : (
+                            <div style={{ height: 240 }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={revenueByMonth} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                        <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#475569' }} tickLine={false} axisLine={false} />
+                                        <YAxis tick={{ fontSize: 11, fill: '#475569' }} tickLine={false} axisLine={false} tickFormatter={(v) => `£${v}`} />
+                                        <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={tooltipStyle} formatter={(value: any) => [`£${Number(value).toFixed(2)}`, 'Revenue']} />
+                                        <Bar dataKey="revenue" fill={FUNNEL_COLOR} radius={[6, 6, 0, 0]} maxBarSize={36} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

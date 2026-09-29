@@ -21,17 +21,16 @@ export const PestHubPage: React.FC<PestHubPageProps> = ({
   return (
     <div className="py-12 bg-slate-50 min-h-screen">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-16">
-        
+
         <div className="flex flex-wrap items-center justify-center gap-2">
           {(['rats-mice', 'bedbugs', 'cockroaches', 'foxes', 'ants'] as NavigationPage[]).map((key) => (
             <button
               key={key}
               onClick={() => onNavigate(key)}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                pestKey === key 
-                  ? 'bg-blue-600 text-white shadow-xs' 
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${pestKey === key
+                  ? 'bg-blue-600 text-white shadow-xs'
                   : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-              }`}
+                }`}
             >
               {key === 'rats-mice' ? 'Rats & Mice' : key.charAt(0).toUpperCase() + key.slice(1)}
             </button>
@@ -85,7 +84,7 @@ export const PestHubPage: React.FC<PestHubPageProps> = ({
             </div>
             <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700">
               <div className="font-bold text-blue-400 mb-1">3. 7-Day Observation</div>
-              <p className="text-slate-300">Log activity in dashboard; escalate to £99 service if needed.</p>
+              <p className="text-slate-300">Log activity in dashboard; escalate to £95.99 service if needed.</p>
             </div>
           </div>
 
@@ -109,7 +108,7 @@ export const PestHubPage: React.FC<PestHubPageProps> = ({
               Still Seeing Activity?
             </h3>
             <p className="text-sm text-slate-600 max-w-xl">
-              Book a Professional Inspection &amp; Treatment — £99. Our professional service is designed for customers who have tried the initial treatment but are still seeing signs of activity.
+              Book a Professional Inspection &amp; Treatment — £95.99. Our professional service is designed for customers who have tried the initial treatment but are still seeing signs of activity.
             </p>
           </div>
 
@@ -117,7 +116,7 @@ export const PestHubPage: React.FC<PestHubPageProps> = ({
             onClick={onBookProfessional}
             className="px-7 py-3.5 rounded-full bg-slate-900 hover:bg-black text-white font-bold text-sm shrink-0 transition-all shadow-sm"
           >
-            BOOK FOR £99
+            BOOK FOR £95.99
           </button>
         </div>
 

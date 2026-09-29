@@ -20,8 +20,7 @@ const app: Express = express();
 const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean);
 app.use(cors({ origin: allowedOrigins && allowedOrigins.length > 0 ? allowedOrigins : true }));
 
-// Stripe webhooks need the raw request body to verify the signature, so this
-// route is mounted BEFORE express.json() with its own raw body parser.
+
 app.post('/payments/webhook', express.raw({ type: 'application/json' }), PaymentsController.webhook);
 
 app.use(express.json());

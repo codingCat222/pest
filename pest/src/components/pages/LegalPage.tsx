@@ -12,29 +12,26 @@ export const LegalPage: React.FC<LegalPageProps> = ({ initialSection, onNavigate
   return (
     <div className="py-12 bg-slate-50 min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
-        
+
         <div className="flex border-b border-slate-200 gap-6 text-sm font-semibold">
           <button
             onClick={() => setSection('terms')}
-            className={`pb-3 transition-colors ${
-              section === 'terms' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-900'
-            }`}
+            className={`pb-3 transition-colors ${section === 'terms' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-900'
+              }`}
           >
             Terms &amp; Conditions
           </button>
           <button
             onClick={() => setSection('privacy')}
-            className={`pb-3 transition-colors ${
-              section === 'privacy' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-900'
-            }`}
+            className={`pb-3 transition-colors ${section === 'privacy' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-900'
+              }`}
           >
             Privacy Policy
           </button>
           <button
             onClick={() => setSection('cookies')}
-            className={`pb-3 transition-colors ${
-              section === 'cookies' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-900'
-            }`}
+            className={`pb-3 transition-colors ${section === 'cookies' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-900'
+              }`}
           >
             Cookie Policy
           </button>
@@ -74,9 +71,9 @@ export const LegalPage: React.FC<LegalPageProps> = ({ initialSection, onNavigate
             </section>
 
             <section className="space-y-2">
-              <h2 className="font-bold text-slate-900 text-base">4. £99 Professional Service Terms</h2>
+              <h2 className="font-bold text-slate-900 text-base">4. £95.99 Professional Service Terms</h2>
               <p>
-                The £99 Professional Inspection &amp; Treatment covers an onsite assessment by a certified pest control technician, ultrasonic camera survey, placement of high-strength commercial bait, and minor golf-sized hole proofing where applicable. If structural proofing is required, an itemised quotation will be provided without obligation.
+                The £95.99 Professional Inspection &amp; Treatment covers an onsite assessment by a certified pest control technician, ultrasonic camera survey, placement of high-strength commercial bait, and minor golf-sized hole proofing where applicable. If structural proofing is required, an itemised quotation will be provided without obligation.
               </p>
             </section>
 

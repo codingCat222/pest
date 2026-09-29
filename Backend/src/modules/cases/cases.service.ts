@@ -60,6 +60,18 @@ export const CasesService = {
       }
     }
 
+    const useCatalogue = !isStaff(requestingUser) || !data.productName || data.deliveryFee === undefined;
+    let productName = data.productName;
+    let deliveryFee = data.deliveryFee;
+    if (useCatalogue) {
+      const product = await prisma.product.findFirst({ where: { pestTarget: data.pest } });
+      if (!product) {
+        throw { status: 422, message: `We don't have a free product available for "${data.pest}" yet.` };
+      }
+      productName = product.name;
+      deliveryFee = product.deliveryCost;
+    }
+
     return prisma.case.create({
       data: {
         referenceNumber: generateReferenceNumber(),
@@ -72,8 +84,8 @@ export const CasesService = {
         pest: data.pest,
         location: data.location,
         status: 'PRODUCT_CLAIMED',
-        productName: data.productName,
-        deliveryFee: data.deliveryFee,
+        productName: productName as string,
+        deliveryFee: deliveryFee as number,
         courier: data.courier,
         userId: ownerId,
         timelineEntries: {

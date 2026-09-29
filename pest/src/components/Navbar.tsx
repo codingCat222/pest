@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Menu, X, ChevronDown, Search } from 'lucide-react';
+import { Menu, X, ChevronDown, Search, LogOut, LayoutDashboard } from 'lucide-react';
 import { NavigationPage } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
   currentPage?: NavigationPage;
@@ -37,6 +38,25 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [scrolled, setScrolled] = useState(false);
   const [searchPest, setSearchPest] = useState(SEARCH_PESTS[0]);
   const [pestMenuOpen, setPestMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleSignOut = async () => {
+    setAccountMenuOpen(false);
+    setMobileOpen(false);
+    await logout();
+    onNavigate('home');
+  };
+
+  const goToPortal = () => {
+    setAccountMenuOpen(false);
+    setMobileOpen(false);
+    onNavigate(user?.role === 'ADMIN' ? ('admin' as NavigationPage) : ('dashboard' as NavigationPage));
+  };
+
+  const initials = user?.fullName
+    ? user.fullName.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase()
+    : '';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 520);
@@ -164,32 +184,85 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={onOpenLogin}
-              className="whitespace-nowrap text-[15px] font-medium text-brand-purple hover:text-brand-green transition-colors cursor-pointer"
-            >
-              Log in
-            </button>
+            {user ? (
+              <div className="relative" onMouseLeave={() => setAccountMenuOpen(false)}>
+                <button
+                  type="button"
+                  onClick={() => setAccountMenuOpen((v) => !v)}
+                  onMouseEnter={() => setAccountMenuOpen(true)}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="w-9 h-9 rounded-full bg-brand-purple text-white font-bold text-xs flex items-center justify-center shrink-0">
+                    {initials || 'U'}
+                  </span>
+                  <span className="whitespace-nowrap text-[15px] font-semibold text-brand-purple max-w-[9rem] truncate">
+                    {user.fullName}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 opacity-60 text-brand-purple" />
+                </button>
 
-            <button
-              type="button"
-              onClick={onOpenSignup}
-              className="bg-brand-green hover:bg-brand-green-dark text-white font-semibold text-[15px] px-7 h-11 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
-            >
-              Sign up
-            </button>
+                {accountMenuOpen && (
+                  <div
+                    onMouseEnter={() => setAccountMenuOpen(true)}
+                    className="absolute right-0 top-full pt-2 z-50"
+                  >
+                    <div className="w-52 bg-white rounded-xl shadow-xl border border-brand-purple/10 py-2 text-sm">
+                      <button
+                        type="button"
+                        onClick={goToPortal}
+                        className="w-full flex items-center gap-2 text-left whitespace-nowrap px-4 py-2 font-medium text-brand-purple hover:bg-brand-green/10 hover:text-brand-green transition-colors"
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        <span>{user.role === 'ADMIN' ? 'Admin Console' : 'My Dashboard'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-2 text-left whitespace-nowrap px-4 py-2 font-medium text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={onOpenLogin}
+                  className="whitespace-nowrap text-[15px] font-medium text-brand-purple hover:text-brand-green transition-colors cursor-pointer"
+                >
+                  Log in
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onOpenSignup}
+                  className="bg-brand-green hover:bg-brand-green-dark text-white font-semibold text-[15px] px-7 h-11 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+                >
+                  Sign up
+                </button>
+              </>
+            )}
           </div>
 
           {/* Mobile controls */}
           <div className="flex md:hidden items-center gap-2 ml-auto">
-            <button
-              type="button"
-              onClick={onOpenSignup}
-              className="bg-brand-green text-white text-xs font-semibold px-3.5 py-2 rounded-full whitespace-nowrap"
-            >
-              Sign up
-            </button>
+            {user ? (
+              <span className="w-8 h-8 rounded-full bg-brand-purple text-white font-bold text-xs flex items-center justify-center shrink-0">
+                {initials || 'U'}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenSignup}
+                className="bg-brand-green text-white text-xs font-semibold px-3.5 py-2 rounded-full whitespace-nowrap"
+              >
+                Sign up
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -251,20 +324,41 @@ export const Navbar: React.FC<NavbarProps> = ({
           ))}
 
           <div className="pt-3 border-t border-brand-purple/10 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => { onOpenLogin(); setMobileOpen(false); }}
-              className="text-sm font-semibold text-brand-purple"
-            >
-              Log in
-            </button>
-            <button
-              type="button"
-              onClick={() => { onOpenSignup(); setMobileOpen(false); }}
-              className="text-xs font-bold text-brand-green"
-            >
-              Sign up →
-            </button>
+            {user ? (
+              <>
+                <button
+                  type="button"
+                  onClick={goToPortal}
+                  className="text-sm font-semibold text-brand-purple"
+                >
+                  {user.role === 'ADMIN' ? 'Admin Console' : 'My Dashboard'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="text-xs font-bold text-red-600"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => { onOpenLogin(); setMobileOpen(false); }}
+                  className="text-sm font-semibold text-brand-purple"
+                >
+                  Log in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { onOpenSignup(); setMobileOpen(false); }}
+                  className="text-xs font-bold text-brand-green"
+                >
+                  Sign up →
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

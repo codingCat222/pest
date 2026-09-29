@@ -88,7 +88,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
             onClick={onOpenBookingModal}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer self-start sm:self-auto"
           >
-            Book Visit (£99)
+            Book Visit (£95.99)
           </button>
         )}
       </div>
@@ -163,14 +163,14 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
           <Calendar className="w-10 h-10 text-slate-300 mx-auto" />
           <h2 className="text-xl font-bold text-slate-900">No Upcoming Appointments</h2>
           <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-            You are currently on Day {activeCase.monitoringDay} of 7. If activity persists after product deployment, our £99 fixed-fee professional inspection is available.
+            You are currently on Day {activeCase.monitoringDay} of 7. If activity persists after product deployment, our £95.99 fixed-fee professional inspection is available.
           </p>
           <button
             type="button"
             onClick={onOpenBookingModal}
             className="px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
           >
-            Book Professional Inspection (£99)
+            Book Professional Inspection (£95.99)
           </button>
         </div>
       )}

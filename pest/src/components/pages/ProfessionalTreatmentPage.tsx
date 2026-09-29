@@ -11,7 +11,7 @@ export const ProfessionalTreatmentPage: React.FC<ProfessionalTreatmentPageProps>
   return (
     <div className="py-12 bg-slate-50 min-h-screen">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-16">
-        
+
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="text-xs font-bold text-blue-600 uppercase tracking-widest">
             PAGE 5 — PROFESSIONAL TREATMENT
@@ -20,7 +20,7 @@ export const ProfessionalTreatmentPage: React.FC<ProfessionalTreatmentPageProps>
             Still Seeing Pest Activity?
           </h1>
           <p className="text-lg text-slate-600 leading-relaxed">
-            Sometimes the first step isn't enough. That's why we've created our £99 Professional Inspection &amp; Treatment service.
+            Sometimes the first step isn't enough. That's why we've created our £95.99 Professional Inspection &amp; Treatment service.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export const ProfessionalTreatmentPage: React.FC<ProfessionalTreatmentPageProps>
                 onClick={onBookProfessional}
                 className="px-8 py-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-sm transition-all inline-flex items-center gap-2"
               >
-                <span>BOOK YOUR £99 VISIT</span>
+                <span>BOOK YOUR £95.99 VISIT</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -51,7 +51,7 @@ export const ProfessionalTreatmentPage: React.FC<ProfessionalTreatmentPageProps>
               All-Inclusive Rate
             </div>
             <div className="text-5xl font-black text-blue-400">
-              £99
+              £95.99
             </div>
             <p className="text-xs text-slate-300">
               Comprehensive onsite inspection &amp; initial treatment where applicable.

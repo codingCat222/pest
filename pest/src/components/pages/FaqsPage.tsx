@@ -24,7 +24,7 @@ export const FaqsPage: React.FC<FaqsPageProps> = ({ onStartEligibility }) => {
             Common Questions Answered
           </h1>
           <p className="text-base sm:text-lg text-slate-600">
-            Everything you need to know about our free products, 7-day monitoring, £99 professional treatment, and proofing.
+            Everything you need to know about our free products, 7-day monitoring, £95.99 professional treatment, and proofing.
           </p>
         </div>
 

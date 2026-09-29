@@ -77,8 +77,8 @@ export interface CreateCasePayload {
     postcode: string;
     pest: string;
     location: string;
-    productName: string;
-    deliveryFee: number;
+    productName?: string;
+    deliveryFee?: number;
     courier?: string;
 }
 

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PestType, ActivityLocation, CaseRecord } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { CasesService, CreateCasePayload } from '../../services/cases';
+import { apiErrorMessage } from '../../services/format';
 
 interface EligibilityPageProps {
     onOrderCompleted: (newCase: CaseRecord) => void;
@@ -13,6 +16,9 @@ const SIGHTING_OPTIONS = ['Live rodent', 'Droppings', 'Scratching/noises', 'Gnaw
 
 export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderCompleted }) => {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const [searchParams] = useSearchParams();
 
     const [pest, setPest] = useState<PestType>((searchParams.get('pest') as PestType) || 'Rats or mice');
@@ -29,11 +35,11 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
         setSightings((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const newCase: CaseRecord = {
-            id: `case-${Date.now()}`,
-            referenceNumber: `FPP-${Math.floor(10000 + Math.random() * 89999)}`,
+        setSubmitError(null);
+
+        const payload: CreateCasePayload = {
             propertyName: address || 'My Property',
             customerName: name,
             customerEmail: email,
@@ -42,20 +48,24 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
             postcode,
             pest,
             location,
-            status: 'PRODUCT_CLAIMED',
-            productName: `${pest} Treatment Kit`,
-            deliveryFee: 4.99,
-            orderDate: new Date().toLocaleDateString('en-GB'),
-            courier: 'Royal Mail',
-            monitoringDay: 0,
-            monitoringDaysTotal: 7,
-            timeline: [
-                { title: 'Product claimed', date: 'Today', completed: true },
-                { title: 'Delivery paid', date: 'Pending', completed: false },
-            ],
         };
-        onOrderCompleted(newCase);
-        navigate('/checkout');
+
+        if (!user) {
+            sessionStorage.setItem('pendingCase', JSON.stringify(payload));
+            navigate('/signup');
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            const created = await CasesService.create(payload);
+            onOrderCompleted(created);
+            navigate('/dashboard');
+        } catch (err) {
+            setSubmitError(apiErrorMessage(err, 'Unable to submit your request. Please try again.'));
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -207,11 +217,13 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
                         </div>
                     </div>
 
+                    {submitError && <p className="text-sm font-semibold text-red-600">{submitError}</p>}
                     <button
                         type="submit"
-                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                        disabled={submitting}
+                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                     >
-                        <span>Check My Eligibility</span>
+                        <span>{submitting ? 'Submitting...' : 'Check My Eligibility'}</span>
                         <span>→</span>
                     </button>
 

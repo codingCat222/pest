@@ -251,7 +251,7 @@ export const AdminCasesView: React.FC<AdminCasesViewProps> = ({
                             >
                                 <option value="MONITORING">MONITORING (7-Day Check-in)</option>
                                 <option value="ACTIVITY_REPORTED">ACTIVITY_REPORTED (Needs Callout)</option>
-                                <option value="PROFESSIONAL_BOOKED">PROFESSIONAL_BOOKED (£99 Active)</option>
+                                <option value="PROFESSIONAL_BOOKED">PROFESSIONAL_BOOKED (£95.99 Active)</option>
                                 <option value="PROFESSIONAL_COMPLETED">PROFESSIONAL_COMPLETED</option>
                                 <option value="PROOFING_RECOMMENDED">PROOFING_RECOMMENDED (Quote Sent)</option>
                                 <option value="PROOFING_ACCEPTED">PROOFING_ACCEPTED (Works Approved)</option>

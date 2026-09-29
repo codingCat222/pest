@@ -2,7 +2,7 @@ import api from './api';
 import { OrderItemRecord } from '../types';
 import { formatDate } from './format';
 
-interface RawOrder {
+export interface RawOrder {
     id: string;
     orderNumber: string;
     productName: string;
@@ -18,7 +18,7 @@ interface RawOrder {
     case?: { referenceNumber: string } | null;
 }
 
-function adaptOrder(raw: RawOrder): OrderItemRecord {
+export function adaptOrder(raw: RawOrder): OrderItemRecord {
     return {
         id: raw.id,
         orderNumber: raw.orderNumber,

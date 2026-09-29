@@ -45,7 +45,7 @@ export const ProfessionalBookingModal: React.FC<ProfessionalBookingModalProps> =
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white rounded-3xl max-w-2xl w-full my-6 overflow-hidden border border-slate-200 shadow-2xl">
-        
+
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-blue-400" />
@@ -75,7 +75,7 @@ export const ProfessionalBookingModal: React.FC<ProfessionalBookingModalProps> =
           <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-bold text-blue-950 text-sm">Your Visit Includes:</span>
-              <span className="text-xl font-black text-blue-900">£99</span>
+              <span className="text-xl font-black text-blue-900">£95.99</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
               <div className="flex items-center gap-2">
@@ -115,11 +115,10 @@ export const ProfessionalBookingModal: React.FC<ProfessionalBookingModalProps> =
                   type="button"
                   key={d.date}
                   onClick={() => setSelectedDate(d.date)}
-                  className={`p-3 rounded-xl text-center border text-xs transition-all ${
-                    selectedDate === d.date
+                  className={`p-3 rounded-xl text-center border text-xs transition-all ${selectedDate === d.date
                       ? 'bg-blue-600 text-white font-bold border-blue-600 shadow-sm'
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   <div className="text-[10px] opacity-75">{d.label}</div>
                   <div className="font-semibold text-xs mt-0.5">{d.date}</div>
@@ -138,11 +137,10 @@ export const ProfessionalBookingModal: React.FC<ProfessionalBookingModalProps> =
                   type="button"
                   key={slot}
                   onClick={() => setSelectedSlot(slot)}
-                  className={`p-3 rounded-xl text-left border text-xs flex items-center justify-between transition-all ${
-                    selectedSlot === slot
+                  className={`p-3 rounded-xl text-left border text-xs flex items-center justify-between transition-all ${selectedSlot === slot
                       ? 'bg-blue-50 border-blue-600 text-blue-950 font-bold'
                       : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   <span className="flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -170,7 +168,7 @@ export const ProfessionalBookingModal: React.FC<ProfessionalBookingModalProps> =
                 <span>Confirming appointment...</span>
               ) : (
                 <>
-                  <span>CONFIRM APPOINTMENT &amp; PAY £99</span>
+                  <span>CONFIRM APPOINTMENT &amp; PAY £95.99</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

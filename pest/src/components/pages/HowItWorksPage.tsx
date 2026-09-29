@@ -108,7 +108,7 @@ export const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                 Step 5: Still Seeing Activity?
               </h2>
               <p className="text-sm text-slate-600 leading-relaxed">
-                The customer can move straight to: <strong>£99 Professional Inspection &amp; Treatment</strong>. No hidden callout charges or inflated quotes.
+                The customer can move straight to: <strong>£95.99 Professional Inspection &amp; Treatment</strong>. No hidden callout charges or inflated quotes.
               </p>
             </div>
           </div>

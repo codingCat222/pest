@@ -7,6 +7,8 @@ interface HeroProps {
   onBookProfessional: () => void;
 }
 
+const HERO_IMAGE = '/Images/image.png';
+
 export const Hero: React.FC<HeroProps> = ({
   onStartEligibility,
   onBookProfessional
@@ -52,17 +54,10 @@ export const Hero: React.FC<HeroProps> = ({
         </div>
 
         {/* Hero panel */}
-        <div
-          className="rounded-3xl md:rounded-[36px] relative overflow-hidden shadow-2xl min-h-[560px] sm:min-h-[620px] flex items-end"
-          style={{
-            backgroundImage: `linear-gradient(90deg, rgba(59,15,122,0.94) 0%, rgba(59,15,122,0.78) 40%, rgba(59,15,122,0.28) 75%, rgba(59,15,122,0.05) 100%), url('/Images/technician.jpeg')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          <div className="relative z-10 max-w-2xl p-7 sm:p-12 md:p-16">
+        <div className="rounded-3xl md:rounded-[36px] relative overflow-hidden shadow-2xl bg-brand-purple grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] items-stretch min-h-[520px]">
+          <div className="relative z-10 max-w-2xl p-7 sm:p-12 lg:p-14 lg:pr-6 flex flex-col justify-center">
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.08]">
+            <h1 className="text-4xl sm:text-5xl md:text-[3.25rem] font-extrabold tracking-tight text-white leading-[1.12]">
               Get pest-free,
               <br />
               starting with a free
@@ -70,20 +65,21 @@ export const Hero: React.FC<HeroProps> = ({
               product
             </h1>
 
-            <p className="mt-6 text-white/85 text-base sm:text-lg max-w-xl leading-relaxed">
-              Tell us what you're dealing with. If you're eligible, we'll send the
-              right product free — you just cover delivery. Monitor it for 7 days,
-              escalate only if you need to.
+            <p className="mt-5 text-white/85 text-base sm:text-lg max-w-xl leading-relaxed">
+              We believe not all pest problems require a call out. So why not give
+              you the products and guideline to try it yourself first for free. If you
+              need then need a hand, our experts can step in for a flat £95.99 –
+              with additional services available when required.
             </p>
 
             {/* Toggle */}
-            <div className="mt-8 flex items-center gap-2">
+            <div className="mt-7 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setActiveToggle('free')}
                 className={`px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer border ${activeToggle === 'free'
-                    ? 'bg-white text-brand-purple border-white shadow-md'
-                    : 'bg-transparent text-white border-white/40 hover:bg-white/10'
+                  ? 'bg-white text-brand-purple border-white shadow-md'
+                  : 'bg-transparent text-white border-white/40 hover:bg-white/10'
                   }`}
               >
                 Free product
@@ -96,11 +92,11 @@ export const Hero: React.FC<HeroProps> = ({
                   onBookProfessional();
                 }}
                 className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all cursor-pointer border ${activeToggle === 'visit'
-                    ? 'bg-white text-brand-purple border-white shadow-md'
-                    : 'bg-transparent text-white border-white/40 hover:bg-white/10'
+                  ? 'bg-white text-brand-purple border-white shadow-md'
+                  : 'bg-transparent text-white border-white/40 hover:bg-white/10'
                   }`}
               >
-                Book <span className="text-brand-green-light font-semibold">£99</span> visit
+                Book <span className="text-brand-green-light font-semibold">£95.99</span> visit
               </button>
             </div>
 
@@ -174,6 +170,26 @@ export const Hero: React.FC<HeroProps> = ({
             </div>
 
           </div>
+
+          {/* Right-side hero image — bleeds to panel edges */}
+          <div className="hidden lg:block relative">
+            <img
+              src={HERO_IMAGE}
+              alt="Pest control products"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+            {/* Gradient overlay so text on the left stays readable */}
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-purple via-brand-purple/40 to-transparent" />
+          </div>
+          {/* Mobile: show image below content */}
+          <div className="lg:hidden w-full h-56 sm:h-72 relative">
+            <img
+              src={HERO_IMAGE}
+              alt="Pest control products"
+              className="w-full h-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-purple/60 to-transparent" />
+          </div>
         </div>
 
         {/* Trust stats */}
@@ -183,21 +199,21 @@ export const Hero: React.FC<HeroProps> = ({
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-6 px-4">
               <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">7 days</div>
               <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">Free monitoring period</div>
             </div>
-            <div>
-              <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">£99</div>
-              <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">Professional visit if needed</div>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-6 px-4">
+              <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight uppercase">3 Products</div>
+              <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">ultrasonic repellent, bait box and traps</div>
             </div>
-            <div>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-6 px-4">
               <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">£0</div>
               <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">Product cost, pay delivery only</div>
             </div>
-            <div>
-              <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">5 pests</div>
-              <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">Covered: rats, mice, bedbugs, roaches, foxes</div>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-6 px-4">
+              <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">40% Cheaper</div>
+              <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">process allows savings</div>
             </div>
           </div>
         </div>

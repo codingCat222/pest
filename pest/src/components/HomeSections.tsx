@@ -36,6 +36,109 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
   return (
     <div className="space-y-24 py-6 bg-white">
 
+      {/* SECTION 6 — Why Free Products */}
+      <section id="why-free" className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
+        <div className="text-xs font-bold text-brand-green uppercase tracking-widest">
+          Why free products?
+        </div>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">
+          Why Free Pest Products?
+        </h2>
+        <p className="text-base text-brand-purple/75 leading-relaxed">
+          We believe getting started shouldn't be complicated.
+        </p>
+        <p className="text-base text-brand-purple/75 leading-relaxed">
+          Instead of having you pay for a visit, we give eligible customers access to selected pest-control products and let you do the first step yourself with an included comprehensive professional guidance to help you save money and learn to manage the issue yourself.
+        </p>
+        <div className="pt-2 flex flex-col sm:flex-row justify-center gap-4 text-sm font-semibold text-brand-purple">
+          <div className="p-4 bg-white rounded-xl shadow-md">
+            If that solves the problem — great.
+          </div>
+          <div className="p-4 bg-white rounded-xl shadow-md">
+            If it doesn't, we're here for the next step.
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3 — Simple Approach */}
+      <section className="bg-brand-purple text-white py-16">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="text-xs font-bold text-brand-green-light uppercase tracking-widest mb-2">
+                A simple approach
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                The Simple Way To Deal With Pest Problems
+              </h2>
+              <div className="mt-6 space-y-4 text-white/80 text-base leading-relaxed">
+                <p>You don't always need a professional visit on day one.</p>
+                <p>That's why we've created a simple step-by-step approach.</p>
+                <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-white pt-2">
+                  <span className="px-3.5 py-1.5 rounded-lg bg-white/10 border border-white/20">Try first</span>
+                  <span className="text-brand-green-light font-bold">→</span>
+                  <span className="px-3.5 py-1.5 rounded-lg bg-white/10 border border-white/20">Monitor</span>
+                  <span className="text-brand-green-light font-bold">→</span>
+                  <span className="px-3.5 py-1.5 rounded-lg bg-white/10 border border-white/20">Escalate if necessary</span>
+                  <span className="text-brand-green-light font-bold">→</span>
+                  <span className="px-3.5 py-1.5 rounded-lg bg-white/10 border border-white/20">Fix the cause</span>
+                </div>
+                <p className="pt-2">Our platform keeps everything in one place so you know exactly what to do next.</p>
+              </div>
+
+              <div className="mt-8">
+                <button
+                  type="button"
+                  onClick={() => onStartEligibility()}
+                  className="inline-flex items-center gap-2 bg-brand-green hover:bg-brand-green-dark text-white font-bold text-sm px-7 py-3.5 rounded-full transition-all cursor-pointer"
+                >
+                  <span>START NOW</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white/10 rounded-3xl p-8 border border-white/15 shadow-xl space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-2xl bg-white/10 text-brand-green-light shrink-0">
+                  <Package className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-lg">Start Free</h3>
+                  <p className="text-xs sm:text-sm text-white/75 mt-1">
+                    Receive UK-compliant products free. You only pay standard delivery cost.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-2xl bg-white/10 text-brand-green-light shrink-0">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-lg">7-Day Observation</h3>
+                  <p className="text-xs sm:text-sm text-white/75 mt-1">
+                    Deploy tamper-resistant stations and monitor results with our guided instructions.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-2xl bg-white/10 text-brand-green-light shrink-0">
+                  <Wrench className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-lg">Specialist Visit</h3>
+                  <p className="text-xs sm:text-sm text-white/75 mt-1">
+                    If activity persists, a certified technician attends with ultrasonic camera, heat steamer, and commercial treatments.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 2 — How It Works */}
       <section id="how-it-works" className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
         <div className="text-center max-w-2xl mx-auto mb-14">
@@ -112,7 +215,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
                 Still seeing activity?
               </h3>
               <p className="mt-2 text-sm text-brand-purple/75 leading-relaxed">
-                No problem. If you're still seeing signs of pest activity, maybe it is because you have missed something or there is a small issue that needs to be addressed first. So you can book our £99 Professional Inspection &amp; Treatment.
+                No problem. If you're still seeing signs of pest activity, maybe it is because you have missed something or there is a small issue that needs to be addressed first. So you can book our £95.99 Professional Inspection &amp; Treatment.
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-brand-purple/10 text-xs font-semibold text-brand-green">
@@ -168,93 +271,14 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
         </div>
       </section>
 
-      {/* SECTION 3 — Simple Approach */}
-      <section className="bg-brand-purple text-white py-16">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="text-xs font-bold text-brand-green-light uppercase tracking-widest mb-2">
-                A simple approach
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                The Simple Way To Deal With Pest Problems
-              </h2>
-              <div className="mt-6 space-y-4 text-white/80 text-base leading-relaxed">
-                <p>You don't always need a professional visit on day one.</p>
-                <p>That's why we've created a simple step-by-step approach.</p>
-                <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-white pt-2">
-                  <span className="px-3.5 py-1.5 rounded-lg bg-white/10 border border-white/20">Try first</span>
-                  <span className="text-brand-green-light font-bold">→</span>
-                  <span className="px-3.5 py-1.5 rounded-lg bg-white/10 border border-white/20">Monitor</span>
-                  <span className="text-brand-green-light font-bold">→</span>
-                  <span className="px-3.5 py-1.5 rounded-lg bg-white/10 border border-white/20">Escalate if necessary</span>
-                  <span className="text-brand-green-light font-bold">→</span>
-                  <span className="px-3.5 py-1.5 rounded-lg bg-white/10 border border-white/20">Fix the cause</span>
-                </div>
-                <p className="pt-2">Our platform keeps everything in one place so you know exactly what to do next.</p>
-              </div>
-
-              <div className="mt-8">
-                <button
-                  type="button"
-                  onClick={() => onStartEligibility()}
-                  className="inline-flex items-center gap-2 bg-brand-green hover:bg-brand-green-dark text-white font-bold text-sm px-7 py-3.5 rounded-full transition-all cursor-pointer"
-                >
-                  <span>START NOW</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white/10 rounded-3xl p-8 border border-white/15 shadow-xl space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-2xl bg-white/10 text-brand-green-light shrink-0">
-                  <Package className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white text-lg">Start Free</h3>
-                  <p className="text-xs sm:text-sm text-white/75 mt-1">
-                    Receive UK-compliant products free. You only pay standard delivery cost.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-2xl bg-white/10 text-brand-green-light shrink-0">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white text-lg">7-Day Observation</h3>
-                  <p className="text-xs sm:text-sm text-white/75 mt-1">
-                    Deploy tamper-resistant stations and monitor results with our guided instructions.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-2xl bg-white/10 text-brand-green-light shrink-0">
-                  <Wrench className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white text-lg">£99 Specialist Visit</h3>
-                  <p className="text-xs sm:text-sm text-white/75 mt-1">
-                    If activity persists, a certified technician attends with ultrasonic camera, heat steamer, and commercial treatments.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 4 — £99 Professional Service */}
+      {/* SECTION 4 — £95.99 Professional Service */}
       <section id="professional-treatment" className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
         <div className="rounded-3xl bg-white shadow-lg border border-brand-purple/10 p-8 sm:p-12 lg:p-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
 
             <div className="lg:col-span-7 space-y-5">
               <div className="text-xs font-bold text-brand-green uppercase tracking-widest">
-                £99 professional service
+                £95.99 professional service
               </div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">
                 Still Seeing Rats or Mice?
@@ -268,7 +292,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
 
               <div className="pt-2">
                 <div className="text-sm font-bold text-brand-purple mb-3">
-                  Professional Inspection &amp; Treatment — £99 includes:
+                  Professional Inspection &amp; Treatment — £95.99 includes:
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-brand-purple/80">
                   <div className="flex items-center gap-2">
@@ -324,7 +348,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
                 Transparent single fee
               </div>
               <div className="text-6xl font-black text-brand-purple tracking-tight">
-                £99
+                £95.99
               </div>
               <div className="text-sm font-bold text-brand-purple">
                 Professional Inspection &amp; Treatment
@@ -337,7 +361,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
                 onClick={onBookProfessional}
                 className="w-full py-4 bg-brand-green hover:bg-brand-green-dark text-white font-extrabold text-sm rounded-full transition-all shadow-sm active:scale-95 cursor-pointer"
               >
-                BOOK FOR ONLY £99
+                BOOK FOR ONLY £95.99
               </button>
             </div>
 
@@ -435,8 +459,8 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
                 type="button"
                 onClick={() => setActivePestTab(tab.id)}
                 className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${activePestTab === tab.id
-                    ? 'bg-brand-green text-white shadow-sm'
-                    : 'bg-white text-brand-purple border border-brand-purple/20 hover:bg-brand-purple/5'
+                  ? 'bg-brand-green text-white shadow-sm'
+                  : 'bg-white text-brand-purple border border-brand-purple/20 hover:bg-brand-purple/5'
                   }`}
               >
                 {tab.label}
@@ -471,30 +495,6 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
         </div>
       </section>
 
-      {/* SECTION 6 — Why Free Products */}
-      <section id="why-free" className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
-        <div className="text-xs font-bold text-brand-green uppercase tracking-widest">
-          Why free products?
-        </div>
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">
-          Why Free Pest Products?
-        </h2>
-        <p className="text-base text-brand-purple/75 leading-relaxed">
-          We believe getting started shouldn't be complicated.
-        </p>
-        <p className="text-base text-brand-purple/75 leading-relaxed">
-          Instead of immediately asking you to pay for a visit, we give eligible customers access to selected pest-control products and let you try the first step yourself.
-        </p>
-        <div className="pt-2 flex flex-col sm:flex-row justify-center gap-4 text-sm font-semibold text-brand-purple">
-          <div className="p-4 bg-white rounded-xl shadow-md">
-            If that solves the problem — great.
-          </div>
-          <div className="p-4 bg-white rounded-xl shadow-md">
-            If it doesn't, we're here for the next step.
-          </div>
-        </div>
-      </section>
-
       {/* SECTION 7 — FAQs */}
       <section id="faqs" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
         <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
@@ -505,7 +505,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
             FAQs
           </h2>
           <p className="text-sm text-brand-purple/70">
-            Clear answers to common questions about eligibility, products, and our £99 service.
+            Clear answers to common questions about eligibility, products, and our £95.99 service.
           </p>
         </div>
 
@@ -571,7 +571,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
               onClick={onBookProfessional}
               className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/10 text-white hover:bg-white/20 font-semibold text-sm transition-all border border-white/30 cursor-pointer"
             >
-              BOOK £99 VISIT
+              BOOK £95.99 VISIT
             </button>
           </div>
         </div>

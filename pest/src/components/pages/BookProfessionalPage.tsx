@@ -125,7 +125,7 @@ export const BookProfessionalPage: React.FC<BookProfessionalPageProps> = ({
                     <div className="rounded-2xl shadow-md p-6 space-y-4">
                         <div className="flex items-center justify-between">
                             <span className="font-bold text-brand-purple">Your visit includes</span>
-                            <span className="text-2xl font-black text-brand-purple">£99</span>
+                            <span className="text-2xl font-black text-brand-purple">£95.99</span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm text-brand-purple/80">
                             {INCLUDES.map((item) => (
