@@ -58,11 +58,11 @@ export const Hero: React.FC<HeroProps> = ({
           <div className="relative z-10 max-w-2xl p-7 sm:p-12 lg:p-14 lg:pr-6 flex flex-col justify-center">
 
             <h1 className="text-4xl sm:text-5xl md:text-[3.25rem] font-extrabold tracking-tight text-white leading-[1.12]">
-              Get pest-free,
+              Pest Problem?
               <br />
-              starting with a free
+              Start Free.
               <br />
-              product
+              {/* product */}
             </h1>
 
             <p className="mt-5 text-white/85 text-base sm:text-lg max-w-xl leading-relaxed">
