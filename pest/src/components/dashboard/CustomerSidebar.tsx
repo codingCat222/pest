@@ -1,32 +1,32 @@
 import React, { useState } from 'react';
 import { CustomerNavTab, CaseRecord, PortalPersona } from '../../types';
-import { 
-  LayoutDashboard, 
-  Compass, 
-  PackageCheck, 
-  CalendarDays, 
-  Activity, 
-  FileText, 
-  ShieldAlert, 
-  Settings, 
-  HelpCircle, 
-  ChevronDown, 
-  Check, 
-  LogOut, 
-  User, 
-  Building2, 
-  Wrench, 
-  ShieldCheck, 
-  ExternalLink 
+import { useAuth } from '../../context/AuthContext';
+import {
+  LayoutDashboard,
+  Compass,
+  PackageCheck,
+  CalendarDays,
+  Activity,
+  FileText,
+  ShieldAlert,
+  Settings,
+  HelpCircle,
+  ChevronDown,
+  Check,
+  LogOut,
+  User,
+  ExternalLink,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface CustomerSidebarProps {
   currentTab: CustomerNavTab;
   onSelectTab: (tab: CustomerNavTab) => void;
   cases: CaseRecord[];
-  activeCase: CaseRecord;
+  activeCase: CaseRecord | null;
   onSelectCase: (caseRecord: CaseRecord) => void;
   onSwitchPersona: (persona: PortalPersona) => void;
+  onSignOut: () => void;
 }
 
 export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
@@ -35,16 +35,19 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
   cases,
   activeCase,
   onSelectCase,
-  onSwitchPersona
+  onSwitchPersona,
+  onSignOut
 }) => {
+  const { user } = useAuth();
+  const displayName = user?.fullName ?? activeCase?.customerName ?? '';
   const [caseDropdownOpen, setCaseDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   return (
     <aside className="w-64 shrink-0 bg-white border-r border-slate-200/90 flex flex-col justify-between h-screen sticky top-0 z-30 select-none">
-      
+
       <div className="flex flex-col min-h-0">
-        
+
         <div className="p-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
@@ -63,22 +66,25 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
           <div className="relative mt-3">
             <button
               type="button"
-              onClick={() => setCaseDropdownOpen(!caseDropdownOpen)}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 transition-colors text-left cursor-pointer"
+              onClick={() => cases.length > 0 && setCaseDropdownOpen(!caseDropdownOpen)}
+              disabled={cases.length === 0}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 transition-colors text-left cursor-pointer disabled:cursor-default disabled:hover:bg-slate-50"
             >
               <div className="min-w-0 pr-2">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Current Case
                 </div>
                 <div className="text-xs font-semibold text-slate-800 truncate">
-                  {activeCase.propertyName}
+                  {activeCase ? activeCase.propertyName : 'No case yet'}
                 </div>
               </div>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform ${caseDropdownOpen ? 'rotate-180' : ''}`} />
+              {cases.length > 0 && (
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform ${caseDropdownOpen ? 'rotate-180' : ''}`} />
+              )}
             </button>
 
-            {caseDropdownOpen && (
-              <div 
+            {caseDropdownOpen && cases.length > 0 && (
+              <div
                 className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs"
                 onClick={() => setCaseDropdownOpen(false)}
               >
@@ -96,7 +102,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                       <div className="font-semibold text-slate-900 truncate">{c.propertyName}</div>
                       <div className="text-[10px] text-slate-400 truncate">{c.propertyAddress}</div>
                     </div>
-                    {c.id === activeCase.id && (
+                    {activeCase && c.id === activeCase.id && (
                       <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                     )}
                   </button>
@@ -114,11 +120,10 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('dashboard')}
-              className={`w-full relative flex items-center gap-3 px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${
-                currentTab === 'dashboard'
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+              className={`w-full relative flex items-center gap-3 px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${currentTab === 'dashboard'
+                ? 'bg-slate-100 text-slate-900 font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
             >
               {currentTab === 'dashboard' && (
                 <span className="w-1 h-5 bg-blue-600 rounded-r absolute left-0" />
@@ -135,11 +140,10 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('journey')}
-              className={`w-full relative flex items-center gap-3 px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${
-                currentTab === 'journey'
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+              className={`w-full relative flex items-center gap-3 px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${currentTab === 'journey'
+                ? 'bg-slate-100 text-slate-900 font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
             >
               {currentTab === 'journey' && (
                 <span className="w-1 h-5 bg-blue-600 rounded-r absolute left-0" />
@@ -156,11 +160,10 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('orders')}
-              className={`w-full relative flex items-center justify-between px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${
-                currentTab === 'orders'
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+              className={`w-full relative flex items-center justify-between px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${currentTab === 'orders'
+                ? 'bg-slate-100 text-slate-900 font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
             >
               <div className="flex items-center gap-3">
                 {currentTab === 'orders' && (
@@ -169,9 +172,11 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 <PackageCheck className={`w-4 h-4 ${currentTab === 'orders' ? 'text-blue-600' : 'text-slate-400'}`} />
                 <span>My Orders</span>
               </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200/60 text-slate-600">
-                1
-              </span>
+              {cases.length > 0 && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200/60 text-slate-600">
+                  {cases.length}
+                </span>
+              )}
             </button>
           </div>
 
@@ -182,11 +187,10 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('appointments')}
-              className={`w-full relative flex items-center justify-between px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${
-                currentTab === 'appointments'
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+              className={`w-full relative flex items-center justify-between px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${currentTab === 'appointments'
+                ? 'bg-slate-100 text-slate-900 font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
             >
               <div className="flex items-center gap-3">
                 {currentTab === 'appointments' && (
@@ -195,7 +199,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 <CalendarDays className={`w-4 h-4 ${currentTab === 'appointments' ? 'text-blue-600' : 'text-slate-400'}`} />
                 <span>My Appointments</span>
               </div>
-              {activeCase.appointmentDate && (
+              {activeCase?.appointmentDate && (
                 <span className="w-2 h-2 rounded-full bg-blue-600" />
               )}
             </button>
@@ -208,11 +212,10 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('monitoring')}
-              className={`w-full relative flex items-center justify-between px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${
-                currentTab === 'monitoring'
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+              className={`w-full relative flex items-center justify-between px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${currentTab === 'monitoring'
+                ? 'bg-slate-100 text-slate-900 font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
             >
               <div className="flex items-center gap-3">
                 {currentTab === 'monitoring' && (
@@ -221,9 +224,11 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 <Activity className={`w-4 h-4 ${currentTab === 'monitoring' ? 'text-blue-600' : 'text-slate-400'}`} />
                 <span>Activity &amp; Monitoring</span>
               </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
-                Day {activeCase.monitoringDay}
-              </span>
+              {activeCase && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
+                  Day {activeCase.monitoringDay}
+                </span>
+              )}
             </button>
           </div>
 
@@ -234,11 +239,10 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('documents')}
-              className={`w-full relative flex items-center gap-3 px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${
-                currentTab === 'documents'
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+              className={`w-full relative flex items-center gap-3 px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${currentTab === 'documents'
+                ? 'bg-slate-100 text-slate-900 font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
             >
               {currentTab === 'documents' && (
                 <span className="w-1 h-5 bg-blue-600 rounded-r absolute left-0" />
@@ -255,11 +259,10 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('proofing')}
-              className={`w-full relative flex items-center justify-between px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${
-                currentTab === 'proofing'
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+              className={`w-full relative flex items-center justify-between px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${currentTab === 'proofing'
+                ? 'bg-slate-100 text-slate-900 font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
             >
               <div className="flex items-center gap-3">
                 {currentTab === 'proofing' && (
@@ -268,7 +271,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 <ShieldAlert className={`w-4 h-4 ${currentTab === 'proofing' ? 'text-blue-600' : 'text-slate-400'}`} />
                 <span>Proofing</span>
               </div>
-              {activeCase.proofingQuote && (
+              {activeCase?.proofingQuote && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">
                   Quote Ready
                 </span>
@@ -283,11 +286,10 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             <button
               type="button"
               onClick={() => onSelectTab('account')}
-              className={`w-full relative flex items-center gap-3 px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${
-                currentTab === 'account'
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+              className={`w-full relative flex items-center gap-3 px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${currentTab === 'account'
+                ? 'bg-slate-100 text-slate-900 font-semibold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
             >
               {currentTab === 'account' && (
                 <span className="w-1 h-5 bg-blue-600 rounded-r absolute left-0" />
@@ -317,11 +319,11 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                JS
+                {displayName ? displayName.trim().slice(0, 2).toUpperCase() : '—'}
               </div>
               <div className="text-left min-w-0">
                 <div className="text-xs font-semibold text-slate-900 truncate">
-                  {activeCase.customerName}
+                  {displayName || 'My account'}
                 </div>
                 <div className="text-[10px] text-slate-400 truncate">
                   Customer Account
@@ -332,7 +334,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
           </button>
 
           {profileDropdownOpen && (
-            <div 
+            <div
               className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs space-y-0.5"
               onClick={() => setProfileDropdownOpen(false)}
             >
@@ -355,9 +357,9 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 <Settings className="w-3.5 h-3.5 text-slate-400" />
                 <span>Notification Settings</span>
               </button>
-              
+
               <div className="my-1 border-t border-slate-100" />
-              
+
               <button
                 type="button"
                 onClick={() => onSwitchPersona('storefront')}
@@ -371,7 +373,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
 
               <button
                 type="button"
-                onClick={() => onSwitchPersona('storefront')}
+                onClick={onSignOut}
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:bg-slate-50 text-left"
               >
                 <LogOut className="w-3.5 h-3.5 text-slate-400" />

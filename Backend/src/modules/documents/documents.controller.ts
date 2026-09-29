@@ -2,9 +2,18 @@ import { Request, Response } from 'express';
 import { DocumentsService } from './documents.service';
 
 export const DocumentsController = {
+  async list(req: Request, res: Response) {
+    try {
+      const docs = await DocumentsService.list((req as any).user);
+      res.json(docs);
+    } catch (err: any) {
+      res.status(err.status || 500).json({ error: err.message || 'Error fetching documents' });
+    }
+  },
+
   async getForCase(req: Request, res: Response) {
     try {
-      const docs = await DocumentsService.getForCase(req.params.caseId as string);
+      const docs = await DocumentsService.getForCase(req.params.caseId as string, (req as any).user);
       res.json(docs);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error fetching documents' });
@@ -13,7 +22,7 @@ export const DocumentsController = {
 
   async getOne(req: Request, res: Response) {
     try {
-      const doc = await DocumentsService.getOne(req.params.id as string);
+      const doc = await DocumentsService.getOne(req.params.id as string, (req as any).user);
       res.json(doc);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error fetching document' });

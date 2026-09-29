@@ -45,7 +45,7 @@ export const CasesController = {
 
   async getTimeline(req: Request, res: Response) {
     const id = req.params.id as string;
-    const timeline = await CasesService.getTimeline(id);
+    const timeline = await CasesService.getTimeline(id, (req as any).user);
     res.json(timeline);
   },
 };

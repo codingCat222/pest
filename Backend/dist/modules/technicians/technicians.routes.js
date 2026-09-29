@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const technicians_controller_1 = require("./technicians.controller");
+const auth_guard_1 = require("../../common/guards/auth.guard");
+const roles_guard_1 = require("../../common/guards/roles.guard");
+const router = (0, express_1.Router)();
+router.use(auth_guard_1.authGuard);
+router.use((0, roles_guard_1.requireRole)('ADMIN', 'TECHNICIAN'));
+router.get('/', technicians_controller_1.TechniciansController.list);
+router.get('/:id', technicians_controller_1.TechniciansController.getOne);
+router.get('/:id/schedule', technicians_controller_1.TechniciansController.getSchedule);
+router.post('/', (0, roles_guard_1.requireRole)('ADMIN'), technicians_controller_1.TechniciansController.create);
+router.patch('/:id', (0, roles_guard_1.requireRole)('ADMIN'), technicians_controller_1.TechniciansController.update);
+exports.default = router;

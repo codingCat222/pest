@@ -14,7 +14,7 @@ export const AppointmentsController = {
 
   async getOne(req: Request, res: Response) {
     try {
-      const appointment = await AppointmentsService.getOne(req.params.id as string);
+      const appointment = await AppointmentsService.getOne(req.params.id as string, (req as any).user);
       res.json(appointment);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error fetching appointment' });
@@ -23,7 +23,7 @@ export const AppointmentsController = {
 
   async create(req: Request, res: Response) {
     try {
-      const appointment = await AppointmentsService.create(req.body);
+      const appointment = await AppointmentsService.create(req.body, (req as any).user);
       res.status(201).json(appointment);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error creating appointment' });
@@ -32,7 +32,7 @@ export const AppointmentsController = {
 
   async update(req: Request, res: Response) {
     try {
-      const appointment = await AppointmentsService.update(req.params.id as string, req.body);
+      const appointment = await AppointmentsService.update(req.params.id as string, req.body, (req as any).user);
       res.json(appointment);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error updating appointment' });
@@ -41,7 +41,7 @@ export const AppointmentsController = {
 
   async cancel(req: Request, res: Response) {
     try {
-      const appointment = await AppointmentsService.cancel(req.params.id as string);
+      const appointment = await AppointmentsService.cancel(req.params.id as string, (req as any).user);
       res.json(appointment);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error cancelling appointment' });

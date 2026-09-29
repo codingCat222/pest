@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import {
   CustomerNavTab,
@@ -6,7 +6,7 @@ import {
   CaseRecord,
   PestType,
 } from './types';
-import { MOCK_CASES, MOCK_ORDERS, INITIAL_PRODUCTS } from './data/mockData';
+import { MOCK_ORDERS, INITIAL_PRODUCTS } from './data/mockData';
 import { CustomerSidebar } from './components/dashboard/CustomerSidebar';
 import { CustomerTopHeader } from './components/dashboard/CustomerTopHeader';
 import { DashboardOverview } from './components/dashboard/DashboardOverview';
@@ -26,6 +26,7 @@ import { Footer } from './components/Footer';
 import { EligibilityPage } from './components/pages/EligibilityPage';
 import { BookProfessionalPage } from './components/pages/BookProfessionalPage';
 import { LoginPage } from './components/pages/LoginPage';
+import { SignupPage } from './components/pages/SignupPage';
 import { AdminSidebar } from './components/admin/AdminSidebar';
 import { AdminTopHeader } from './components/admin/AdminTopHeader';
 import { AdminOverviewView } from './components/admin/AdminOverviewView';
@@ -46,10 +47,29 @@ import { FaqsPage } from './components/pages/FaqsPage';
 import { AboutUsPage } from './components/pages/AboutUsPage';
 import { ContactPage } from './components/pages/ContactPage';
 import { LegalPage } from './components/pages/LegalPage';
-import { X } from 'lucide-react';
+import { X, Inbox } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { CasesService } from './services/cases';
+import { ActivityReportsService } from './services/activityReports';
+import { AppointmentsService } from './services/appointments';
+import { apiErrorMessage } from './services/format';
 
-// ---------- Public site layout (navbar + footer wrap every public page) ----------
+function EmptyDashboard() {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 text-center gap-4 max-w-md mx-auto">
+      <div className="w-12 h-12 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center">
+        <Inbox className="w-6 h-6" />
+      </div>
+      <div>
+        <h2 className="font-bold text-brand-purple">No active case yet</h2>
+        <p className="text-sm text-brand-purple/70 mt-1">
+          Your treatment journey will appear here once your order is set up.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function PublicLayout({
   cases,
   setCases,
@@ -61,11 +81,12 @@ function PublicLayout({
   cases: CaseRecord[];
   setCases: (c: CaseRecord[]) => void;
   setActiveCase: (c: CaseRecord) => void;
-  activeCase: CaseRecord;
-  onBookingConfirmed: (date: string, time: string) => void;
+  activeCase: CaseRecord | null;
+  onBookingConfirmed: (date: string, time: string, isoDate: string) => Promise<void>;
   onLoginSuccess: (role: 'customer' | 'admin') => void;
 }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const goToEligibility = (pest?: PestType) => {
     const params = pest ? `?pest=${encodeURIComponent(pest)}` : '';
@@ -85,6 +106,7 @@ function PublicLayout({
         onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
         onOpenEligibility={() => goToEligibility()}
         onOpenLogin={() => navigate('/login')}
+        onOpenSignup={() => navigate('/signup')}
       />
 
       <main className="flex-1">
@@ -117,22 +139,37 @@ function PublicLayout({
           <Route
             path="/book-professional"
             element={
-              <BookProfessionalPage
-                currentCase={activeCase}
-                onBookingConfirmed={onBookingConfirmed}
-                onBack={() => navigate(-1)}
-                onGoToDashboard={() => navigate('/dashboard')}
-              />
+              activeCase ? (
+                <BookProfessionalPage
+                  currentCase={activeCase}
+                  onBookingConfirmed={onBookingConfirmed}
+                  onBack={() => navigate(-1)}
+                  onGoToDashboard={() => navigate('/dashboard')}
+                />
+              ) : (
+                <Navigate to={user ? '/dashboard' : '/login'} replace />
+              )
             }
           />
           <Route
             path="/login"
             element={
               <LoginPage
-                currentCase={activeCase}
                 onLoginSuccess={(role) => {
                   onLoginSuccess(role);
                   navigate(role === 'admin' ? '/admin' : '/dashboard');
+                }}
+                onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
+              />
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <SignupPage
+                onSignupSuccess={() => {
+                  onLoginSuccess('customer');
+                  navigate('/dashboard');
                 }}
                 onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
               />
@@ -160,14 +197,23 @@ function DashboardLayout({
   setActiveCase,
   onUpdateActiveCase,
   onOpenReport,
+  casesStatus,
+  casesError,
 }: {
   cases: CaseRecord[];
-  activeCase: CaseRecord;
+  activeCase: CaseRecord | null;
   setActiveCase: (c: CaseRecord) => void;
   onUpdateActiveCase: (c: CaseRecord) => void;
   onOpenReport: () => void;
+  casesStatus: 'idle' | 'loading' | 'ready' | 'error';
+  casesError: string | null;
 }) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+  const signOut = async () => {
+    await logout();
+    navigate('/login');
+  };
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const goToBooking = () => navigate('/book-professional');
@@ -190,6 +236,7 @@ function DashboardLayout({
           activeCase={activeCase}
           onSelectCase={(c) => { setActiveCase(c); setMobileMenuOpen(false); }}
           onSwitchPersona={() => navigate('/')}
+          onSignOut={signOut}
         />
       </div>
 
@@ -202,17 +249,25 @@ function DashboardLayout({
         />
 
         <main className="flex-1 max-w-[1360px] w-full mx-auto p-4 sm:p-6 lg:p-8">
-          <Routes>
-            <Route path="/" element={<DashboardOverview activeCase={activeCase} onNavigateTab={goTab} onOpenReportModal={onOpenReport} onOpenBookingModal={goToBooking} onOpenQuoteModal={() => goTab('proofing')} onUpdateCase={onUpdateActiveCase} />} />
-            <Route path="/journey" element={<MyJourneyView activeCase={activeCase} onNavigateTab={goTab} onOpenReportModal={onOpenReport} />} />
-            <Route path="/monitoring" element={<ActivityMonitoringView activeCase={activeCase} onUpdateCase={onUpdateActiveCase} />} />
-            <Route path="/orders" element={<MyOrdersView />} />
-            <Route path="/appointments" element={<AppointmentsView activeCase={activeCase} onOpenBookingModal={goToBooking} onUpdateCase={onUpdateActiveCase} />} />
-            <Route path="/proofing" element={<ProofingView activeCase={activeCase} onUpdateCase={onUpdateActiveCase} />} />
-            <Route path="/documents" element={<DocumentsView />} />
-            <Route path="/account" element={<AccountSettingsView activeCase={activeCase} />} />
-            <Route path="/help" element={<HelpSupportView activeCase={activeCase} />} />
-          </Routes>
+          {casesStatus === 'error' ? (
+            <p className="py-24 text-center text-sm font-semibold text-red-600">{casesError}</p>
+          ) : casesStatus !== 'ready' ? (
+            <p className="py-24 text-center text-sm text-slate-500">Loading your dashboard...</p>
+          ) : activeCase ? (
+            <Routes>
+              <Route path="/" element={<DashboardOverview activeCase={activeCase} onNavigateTab={goTab} onOpenReportModal={onOpenReport} onOpenBookingModal={goToBooking} onOpenQuoteModal={() => goTab('proofing')} onUpdateCase={onUpdateActiveCase} />} />
+              <Route path="/journey" element={<MyJourneyView activeCase={activeCase} onNavigateTab={goTab} onOpenReportModal={onOpenReport} />} />
+              <Route path="/monitoring" element={<ActivityMonitoringView activeCase={activeCase} onUpdateCase={onUpdateActiveCase} />} />
+              <Route path="/orders" element={<MyOrdersView />} />
+              <Route path="/appointments" element={<AppointmentsView activeCase={activeCase} onOpenBookingModal={goToBooking} onUpdateCase={onUpdateActiveCase} />} />
+              <Route path="/proofing" element={<ProofingView activeCase={activeCase} onUpdateCase={onUpdateActiveCase} />} />
+              <Route path="/documents" element={<DocumentsView />} />
+              <Route path="/account" element={<AccountSettingsView activeCase={activeCase} />} />
+              <Route path="/help" element={<HelpSupportView activeCase={activeCase} />} />
+            </Routes>
+          ) : (
+            <EmptyDashboard />
+          )}
         </main>
 
         <MobileBottomNav currentTab={currentTab} onSelectTab={goTab} onOpenMore={() => setMobileMenuOpen(true)} />
@@ -230,7 +285,9 @@ function DashboardLayout({
             <div className="p-4 overflow-y-auto space-y-4 flex-1 text-sm">
               <div className="space-y-1">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Active Property</div>
-                <div className="p-2.5 rounded-xl bg-slate-50 border text-xs font-semibold text-slate-800">{activeCase.propertyName}</div>
+                <div className="p-2.5 rounded-xl bg-slate-50 border text-xs font-semibold text-slate-800">
+                  {activeCase ? activeCase.propertyName : 'No case yet'}
+                </div>
               </div>
               <div className="space-y-1">
                 {(['dashboard', 'journey', 'orders', 'appointments', 'monitoring', 'proofing', 'documents', 'account', 'help'] as CustomerNavTab[]).map((tab) => (
@@ -242,6 +299,9 @@ function DashboardLayout({
               <div className="pt-3 border-t space-y-1">
                 <button type="button" onClick={() => { navigate('/'); setMobileMenuOpen(false); }} className="w-full text-left py-2 px-3 rounded-lg text-brand-green bg-brand-green/10 text-xs font-bold cursor-pointer">
                   View Public Website
+                </button>
+                <button type="button" onClick={() => { setMobileMenuOpen(false); signOut(); }} className="w-full text-left py-2 px-3 rounded-lg text-red-600 bg-red-50 text-xs font-bold cursor-pointer">
+                  Sign Out
                 </button>
               </div>
             </div>
@@ -258,12 +318,14 @@ function AdminLayout({
   activeCase,
   setActiveCase,
   onUpdateActiveCase,
+  onCaseCreated,
   onLogout,
 }: {
   cases: CaseRecord[];
-  activeCase: CaseRecord;
+  activeCase: CaseRecord | null;
   setActiveCase: (c: CaseRecord) => void;
   onUpdateActiveCase: (c: CaseRecord) => void;
+  onCaseCreated: (c: CaseRecord) => void;
   onLogout: () => void;
 }) {
   const navigate = useNavigate();
@@ -311,6 +373,7 @@ function AdminLayout({
                   activeCase={activeCase}
                   onUpdateCase={onUpdateActiveCase}
                   onSelectCase={setActiveCase}
+                  onCaseCreated={onCaseCreated}
                 />
               }
             />
@@ -371,50 +434,82 @@ function AdminLayout({
 
 // ---------- Root app ----------
 function AppRoutes() {
-  const [cases, setCases] = useState<CaseRecord[]>(MOCK_CASES);
-  const [activeCase, setActiveCase] = useState<CaseRecord>(MOCK_CASES[0]);
+  const [cases, setCases] = useState<CaseRecord[]>([]);
+  const [activeCase, setActiveCase] = useState<CaseRecord | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [quickReportLevel, setQuickReportLevel] = useState<'No activity' | 'Less activity' | 'Same activity' | 'More activity' | 'Not sure'>('Less activity');
   const [quickReportNotes, setQuickReportNotes] = useState('');
+  const [casesStatus, setCasesStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [isReportSaving, setIsReportSaving] = useState(false);
+  const [casesError, setCasesError] = useState<string | null>(null);
 
   const { user, isLoading, logout } = useAuth();
   const session = user
     ? { role: (user.role === 'ADMIN' ? 'admin' : 'customer') as 'customer' | 'admin' }
     : null;
 
+  useEffect(() => {
+    if (!user) {
+      setCases([]);
+      setActiveCase(null);
+      setCasesStatus('idle');
+      return;
+    }
+
+    let cancelled = false;
+    setCasesStatus('loading');
+    setCasesError(null);
+
+    CasesService.list()
+      .then((fetched) => {
+        if (cancelled) return;
+        setCases(fetched);
+        setActiveCase((prev) => fetched.find((c) => c.id === prev?.id) ?? fetched[0] ?? null);
+        setCasesStatus('ready');
+      })
+      .catch((err: any) => {
+        if (cancelled) return;
+        setCasesError(apiErrorMessage(err, 'Unable to load your dashboard right now.'));
+        setCasesStatus('error');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
   const handleUpdateActiveCase = (updated: CaseRecord) => {
     setActiveCase(updated);
     setCases((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
   };
 
-  const handleBookingConfirmed = (date: string, time: string) => {
-    const updated: CaseRecord = {
-      ...activeCase,
-      status: 'PROFESSIONAL_BOOKED',
-      appointmentDate: date,
-      appointmentTime: time,
-      timeline: [
-        ...activeCase.timeline,
-        { title: 'Professional Service Booked', date: 'Today', completed: true, details: `Appointment confirmed for ${date} (${time}) with certified specialist.` },
-      ],
-    };
-    handleUpdateActiveCase(updated);
+  const handleCaseCreated = (created: CaseRecord) => {
+    setCases((prev) => [created, ...prev]);
+    setActiveCase(created);
   };
 
-  const handleQuickReportSubmit = (e: React.FormEvent) => {
+  const handleBookingConfirmed = async (_date: string, time: string, isoDate: string) => {
+    if (!activeCase) return;
+    await AppointmentsService.book(activeCase.id, isoDate, time);
+    handleUpdateActiveCase(await CasesService.getById(activeCase.id));
+  };
+
+  const handleQuickReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const updated: CaseRecord = {
-      ...activeCase,
-      activityReported: quickReportLevel,
-      activityNotes: quickReportNotes || activeCase.activityNotes,
-      lastReportedDate: 'Today',
-      timeline: [
-        ...activeCase.timeline,
-        { title: `Activity Report: ${quickReportLevel}`, date: 'Today', completed: true, details: quickReportNotes ? `Customer note: "${quickReportNotes}"` : `Reported: ${quickReportLevel}` },
-      ],
-    };
-    handleUpdateActiveCase(updated);
-    setIsReportModalOpen(false);
+    if (!activeCase) return;
+    setReportError(null);
+    setIsReportSaving(true);
+    try {
+      await ActivityReportsService.create(activeCase.id, { activityLevel: quickReportLevel, notes: quickReportNotes });
+      handleUpdateActiveCase(await CasesService.getById(activeCase.id));
+      setQuickReportNotes('');
+      setIsReportModalOpen(false);
+    } catch (err) {
+      setReportError(apiErrorMessage(err, 'Unable to save your report. Please try again.'));
+    } finally {
+      setIsReportSaving(false);
+    }
   };
 
   if (isLoading) {
@@ -438,6 +533,8 @@ function AppRoutes() {
                 setActiveCase={setActiveCase}
                 onUpdateActiveCase={handleUpdateActiveCase}
                 onOpenReport={() => setIsReportModalOpen(true)}
+                casesStatus={casesStatus}
+                casesError={casesError}
               />
             ) : (
               <Navigate to="/login" replace />
@@ -453,6 +550,7 @@ function AppRoutes() {
                 activeCase={activeCase}
                 setActiveCase={setActiveCase}
                 onUpdateActiveCase={handleUpdateActiveCase}
+                onCaseCreated={handleCaseCreated}
                 onLogout={() => { logout(); }}
               />
             ) : (
@@ -475,12 +573,12 @@ function AppRoutes() {
         />
       </Routes>
 
-      {isReportModalOpen && (
+      {isReportModalOpen && activeCase && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-7 border border-slate-200 shadow-2xl space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Day 4 of 7</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Day {activeCase.monitoringDay} of {activeCase.monitoringDaysTotal}</span>
                 <h3 className="text-lg font-bold text-slate-900">Report Pest Activity</h3>
               </div>
               <button type="button" onClick={() => setIsReportModalOpen(false)} className="text-slate-400 hover:text-slate-900 cursor-pointer">
@@ -503,8 +601,9 @@ function AppRoutes() {
                 <label className="block font-bold text-slate-700 mb-1">Notes &amp; Details</label>
                 <textarea rows={2} value={quickReportNotes} onChange={(e) => setQuickReportNotes(e.target.value)} placeholder="e.g. Bait checked; partial consumption in subfloor station." className="w-full p-2.5 rounded-xl border border-slate-300 font-medium" />
               </div>
-              <button type="submit" className="w-full py-3 bg-brand-green hover:bg-brand-green-dark text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer">
-                Record Observation
+              {reportError && <p className="text-red-600 font-semibold">{reportError}</p>}
+              <button type="submit" disabled={isReportSaving} className="w-full py-3 bg-brand-green hover:bg-brand-green-dark text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-60">
+                {isReportSaving ? 'Saving...' : 'Record Observation'}
               </button>
             </form>
           </div>

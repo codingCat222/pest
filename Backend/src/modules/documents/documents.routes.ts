@@ -7,6 +7,7 @@ const router = Router();
 
 router.use(authGuard);
 
+router.get('/', DocumentsController.list);
 router.get('/case/:caseId', DocumentsController.getForCase);
 router.get('/:id', DocumentsController.getOne);
 router.post('/', requireRole('ADMIN', 'TECHNICIAN'), DocumentsController.create);

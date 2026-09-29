@@ -7,6 +7,7 @@ interface NavbarProps {
   onNavigate: (page: NavigationPage) => void;
   onOpenEligibility: (pest?: string) => void;
   onOpenLogin: () => void;
+  onOpenSignup: () => void;
 }
 
 const SERVICE_LINKS: { page: NavigationPage; label: string }[] = [
@@ -29,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
   onOpenEligibility,
   onOpenLogin,
+  onOpenSignup,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -172,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               type="button"
-              onClick={() => onOpenEligibility()}
+              onClick={onOpenSignup}
               className="bg-brand-green hover:bg-brand-green-dark text-white font-semibold text-[15px] px-7 h-11 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap"
             >
               Sign up
@@ -183,7 +185,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex md:hidden items-center gap-2 ml-auto">
             <button
               type="button"
-              onClick={() => onOpenEligibility()}
+              onClick={onOpenSignup}
               className="bg-brand-green text-white text-xs font-semibold px-3.5 py-2 rounded-full whitespace-nowrap"
             >
               Sign up
@@ -258,7 +260,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => { onOpenEligibility(); setMobileOpen(false); }}
+              onClick={() => { onOpenSignup(); setMobileOpen(false); }}
               className="text-xs font-bold text-brand-green"
             >
               Sign up →

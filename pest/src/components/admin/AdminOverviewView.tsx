@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CaseRecord } from '../../types';
 import {
     LineChart,
@@ -13,6 +14,7 @@ import {
     Cell,
 } from 'recharts';
 import { Timer, ClipboardList, CalendarClock, Users, ChevronDown, Plus } from 'lucide-react';
+import { AdminService, AdminOverview } from '../../services/admin';
 
 interface AdminOverviewViewProps {
     cases: CaseRecord[];
@@ -30,37 +32,69 @@ const PEST_COLORS: Record<string, string> = {
 
 const TIME_RANGES = ['7 days', '30 days', '3 months', '6 months'] as const;
 
+// Case volume trend — illustrative shape; the backend has no time-series
+// endpoint for case volume over time yet (only point-in-time aggregates).
+const trendData = [
+    { period: 'Apr', cases: 210 },
+    { period: 'May', cases: 265 },
+    { period: 'Jun', cases: 298 },
+    { period: 'Jul', cases: 340 },
+    { period: 'Aug', cases: 312 },
+    { period: 'Sep', cases: 358 },
+];
+
 export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ cases }) => {
+    const navigate = useNavigate();
     const [timeRange, setTimeRange] = useState<(typeof TIME_RANGES)[number]>('6 months');
 
-    const activeCases = cases.filter(
+    const [overview, setOverview] = useState<AdminOverview | null>(null);
+    const [pestCounts, setPestCounts] = useState<Record<string, number> | null>(null);
+    const [loadError, setLoadError] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        Promise.all([AdminService.getOverview(), AdminService.getCasesByPest()])
+            .then(([overviewData, pestData]) => {
+                if (cancelled) return;
+                setOverview(overviewData);
+                setPestCounts(
+                    pestData.reduce<Record<string, number>>((acc, row) => {
+                        acc[row.pest] = row.count;
+                        return acc;
+                    }, {})
+                );
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setLoadError(true);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    // Fallback to local case-prop math if the overview API is unavailable.
+    const fallbackActiveCases = cases.filter(
         (c) => !['RESOLVED', 'CLOSED', 'CANCELLED'].includes(c.status)
     ).length;
+    const fallbackResolvedCases = cases.filter((c) => ['RESOLVED', 'CLOSED'].includes(c.status)).length;
     const upcomingAppointments = cases.filter(
         (c) => c.appointmentStatus === 'Scheduled' || c.appointmentStatus === 'Pending'
     ).length;
-    const resolvedCases = cases.filter((c) => ['RESOLVED', 'CLOSED'].includes(c.status)).length;
 
-    // Illustrative platform-wide lead count — see AdminReportsView for the full illustrative funnel.
-    const newLeadsThisWeek = 1482;
+    const activeCases = overview?.activeCases ?? fallbackActiveCases;
+    const resolvedCases = overview?.resolvedCases ?? fallbackResolvedCases;
+    const totalCases = overview?.totalCases ?? cases.length;
 
-    // Case volume trend — illustrative shape at platform scale, since the local
-    // case sample is too small (a handful of cases) to plot a meaningful trend line.
-    const trendData = [
-        { period: 'Apr', cases: 210 },
-        { period: 'May', cases: 265 },
-        { period: 'Jun', cases: 298 },
-        { period: 'Jul', cases: 340 },
-        { period: 'Aug', cases: 312 },
-        { period: 'Sep', cases: 358 },
-    ];
-
-    const pestCounts = cases.reduce<Record<string, number>>((acc, c) => {
+    const fallbackPestCounts = cases.reduce<Record<string, number>>((acc, c) => {
         acc[c.pest] = (acc[c.pest] || 0) + 1;
         return acc;
     }, {});
+    const effectivePestCounts = pestCounts ?? fallbackPestCounts;
 
-    const donutData = Object.entries(pestCounts).map(([pest, count]) => ({
+    const donutData = Object.entries(effectivePestCounts).map(([pest, count]) => ({
         name: pest,
         value: count,
         color: PEST_COLORS[pest] || '#94a3b8',
@@ -74,7 +108,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ cases }) =
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
                 <button
                     type="button"
                     className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 px-1"
@@ -82,6 +116,11 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ cases }) =
                     All
                     <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                 </button>
+                {loadError && (
+                    <span className="text-[11px] font-semibold text-red-600">
+                        Live stats unavailable — showing local estimate.
+                    </span>
+                )}
             </div>
 
             {/* Stat cards */}
@@ -90,8 +129,8 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ cases }) =
                     <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
                         <Timer className="w-4 h-4" />
                     </div>
-                    <div className="text-2xl font-black text-slate-900">{newLeadsThisWeek.toLocaleString()}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">New leads</div>
+                    <div className="text-2xl font-black text-slate-900">{totalCases.toLocaleString()}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">Total cases</div>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-5">
@@ -182,7 +221,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ cases }) =
 
                 <div className="xl:col-span-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6">
                     <h2 className="font-bold text-slate-900">Case mix</h2>
-                    <p className="text-xs text-slate-500 mt-0.5 mb-2">Active cases by pest type</p>
+                    <p className="text-xs text-slate-500 mt-0.5 mb-2">Cases by pest type</p>
 
                     <div className="h-52 relative">
                         {totalPestCases > 0 ? (
@@ -225,7 +264,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ cases }) =
                                     <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
                                     <span className="text-slate-600">{pest}</span>
                                 </div>
-                                <span className="font-semibold text-slate-900">{pestCounts[pest] || 0}</span>
+                                <span className="font-semibold text-slate-900">{effectivePestCounts[pest] || 0}</span>
                             </div>
                         ))}
                     </div>
@@ -237,7 +276,11 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ cases }) =
                 <div className="xl:col-span-8 bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="font-bold text-slate-900">Upcoming appointments</h2>
-                        <button type="button" className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/admin/cases')}
+                            className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
+                        >
                             View all
                         </button>
                     </div>
@@ -279,6 +322,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ cases }) =
                     <div className="space-y-2">
                         <button
                             type="button"
+                            onClick={() => navigate('/admin/cases')}
                             className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-dashed border-slate-200 text-xs font-semibold text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/40 transition-colors cursor-pointer"
                         >
                             <Plus className="w-3.5 h-3.5" />
@@ -286,14 +330,16 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({ cases }) =
                         </button>
                         <button
                             type="button"
-                            className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-dashed border-slate-200 text-xs font-semibold text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/40 transition-colors cursor-pointer"
+                            disabled
+                            className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-dashed border-slate-200 text-xs font-semibold text-slate-400 opacity-60 cursor-not-allowed"
                         >
                             <Plus className="w-3.5 h-3.5" />
                             Schedule appointment
                         </button>
                         <button
                             type="button"
-                            className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-dashed border-slate-200 text-xs font-semibold text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/40 transition-colors cursor-pointer"
+                            disabled
+                            className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-dashed border-slate-200 text-xs font-semibold text-slate-400 opacity-60 cursor-not-allowed"
                         >
                             <Plus className="w-3.5 h-3.5" />
                             Send proofing quote

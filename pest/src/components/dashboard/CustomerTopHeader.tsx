@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { CustomerNavTab, CaseRecord, PortalPersona } from '../../types';
-import { Bell, Search, ShieldCheck, ChevronRight, Menu, CheckCircle2, Clock, X } from 'lucide-react';
+import { Bell, ChevronRight, Menu } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface CustomerTopHeaderProps {
   currentTab: CustomerNavTab;
-  activeCase: CaseRecord;
+  activeCase: CaseRecord | null;
   onOpenMobileMenu: () => void;
   onSwitchPersona: (persona: PortalPersona) => void;
+}
+
+function initialsOf(name?: string) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0] ?? '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase() || '?';
 }
 
 export const CustomerTopHeader: React.FC<CustomerTopHeaderProps> = ({
@@ -15,35 +22,29 @@ export const CustomerTopHeader: React.FC<CustomerTopHeaderProps> = ({
   onOpenMobileMenu,
   onSwitchPersona
 }) => {
+  const { user } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 'notif-1',
-      title: 'Day 4 Monitoring Check-in',
-      desc: 'Please submit your activity report for 14 Meadowcroft Grove.',
-      time: '2 hours ago',
-      read: false
-    },
-    {
-      id: 'notif-2',
-      title: 'Product Delivered Successfully',
-      desc: 'Royal Mail confirmed delivery of Targeted Rodent Activity Kit.',
-      time: 'Yesterday',
-      read: true
-    },
-    {
-      id: 'notif-3',
-      title: 'Proofing Recommendation Generated',
-      desc: 'Technician inspection identified 3 potential entry voids.',
-      time: '3 days ago',
-      read: true
-    }
-  ]);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+
+  const notifications = useMemo(
+    () =>
+      (activeCase?.timeline ?? [])
+        .slice(-5)
+        .reverse()
+        .map((t, i) => ({
+          id: `${activeCase?.id}-${i}-${t.title}`,
+          title: t.title,
+          desc: t.details ?? '',
+          time: t.date,
+          read: readIds.has(`${activeCase?.id}-${i}-${t.title}`),
+        })),
+    [activeCase, readIds]
+  );
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+    setReadIds(new Set(notifications.map(n => n.id)));
   };
 
   const getBreadcrumbName = (tab: CustomerNavTab) => {
@@ -63,7 +64,7 @@ export const CustomerTopHeader: React.FC<CustomerTopHeaderProps> = ({
 
   return (
     <header className="h-16 bg-white border-b border-slate-200/80 sticky top-0 z-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-      
+
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -80,10 +81,12 @@ export const CustomerTopHeader: React.FC<CustomerTopHeaderProps> = ({
           <span className="font-bold text-slate-900">{getBreadcrumbName(currentTab)}</span>
         </div>
 
-        <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-          {activeCase.pest}
-        </span>
+        {activeCase?.pest && (
+          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+            {activeCase.pest}
+          </span>
+        )}
       </div>
 
       <div className="flex items-center gap-3">
@@ -101,7 +104,7 @@ export const CustomerTopHeader: React.FC<CustomerTopHeaderProps> = ({
           </button>
 
           {notificationsOpen && (
-            <div 
+            <div
               className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 text-xs space-y-3"
             >
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -118,18 +121,20 @@ export const CustomerTopHeader: React.FC<CustomerTopHeaderProps> = ({
               </div>
 
               <div className="space-y-2 max-h-72 overflow-y-auto">
+                {notifications.length === 0 && (
+                  <p className="text-slate-500 text-[11px] py-3 text-center">No notifications yet.</p>
+                )}
                 {notifications.map((n) => (
-                  <div 
+                  <div
                     key={n.id}
-                    className={`p-2.5 rounded-xl border transition-colors ${
-                      n.read ? 'bg-white border-slate-100 text-slate-500' : 'bg-blue-50/50 border-blue-100 text-slate-800 font-medium'
-                    }`}
+                    className={`p-2.5 rounded-xl border transition-colors ${n.read ? 'bg-white border-slate-100 text-slate-500' : 'bg-blue-50/50 border-blue-100 text-slate-800 font-medium'
+                      }`}
                   >
                     <div className="flex items-center justify-between text-[11px] mb-0.5">
                       <span className="font-bold text-slate-900">{n.title}</span>
                       <span className="text-slate-400 text-[10px]">{n.time}</span>
                     </div>
-                    <p className="text-slate-600 text-[11px] leading-relaxed">{n.desc}</p>
+                    {n.desc && <p className="text-slate-600 text-[11px] leading-relaxed">{n.desc}</p>}
                   </div>
                 ))}
               </div>
@@ -148,7 +153,7 @@ export const CustomerTopHeader: React.FC<CustomerTopHeaderProps> = ({
         </div>
 
         <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
-          JS
+          {initialsOf(user?.fullName)}
         </div>
       </div>
 

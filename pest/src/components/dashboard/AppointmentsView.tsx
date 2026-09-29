@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { CaseRecord } from '../../types';
+import { AppointmentsService } from '../../services/appointments';
+import { CasesService } from '../../services/cases';
+import { apiErrorMessage } from '../../services/format';
 import { Calendar, Clock, MapPin, User, CheckCircle2, AlertCircle, Wrench, X } from 'lucide-react';
 
 interface AppointmentsViewProps {
@@ -14,52 +17,61 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
   onUpdateCase
 }) => {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
-  const [rescheduleDate, setRescheduleDate] = useState('Friday 27 Sep 2026');
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const dateOptions = useMemo(() => {
+    const out: { label: string; iso: string }[] = [];
+    const today = new Date();
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+      const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      out.push({ iso, label: d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }) });
+    }
+    return out;
+  }, []);
+
+  const [rescheduleDate, setRescheduleDate] = useState(dateOptions[0].iso);
   const [rescheduleSlot, setRescheduleSlot] = useState('02:00 PM – 04:00 PM');
 
-  const handleConfirmReschedule = () => {
-    const updated: CaseRecord = {
-      ...activeCase,
-      appointmentDate: rescheduleDate,
-      appointmentTime: rescheduleSlot,
-      timeline: [
-        ...activeCase.timeline,
-        {
-          title: 'Appointment Rescheduled',
-          date: 'Today',
-          completed: true,
-          details: `Visit moved to ${rescheduleDate} (${rescheduleSlot}).`
-        }
-      ]
-    };
-    onUpdateCase(updated);
-    setShowRescheduleModal(false);
+  const refreshCase = async () => {
+    const fresh = await CasesService.getById(activeCase.id);
+    onUpdateCase(fresh);
   };
 
-  const handleCancelAppointment = () => {
-    if (confirm('Are you sure you want to cancel this inspection appointment? You can book again at any time.')) {
-      const updated: CaseRecord = {
-        ...activeCase,
-        appointmentDate: undefined,
-        appointmentTime: undefined,
-        appointmentStatus: undefined,
-        timeline: [
-          ...activeCase.timeline,
-          {
-            title: 'Appointment Cancelled',
-            date: 'Today',
-            completed: true,
-            details: 'Customer requested cancellation.'
-          }
-        ]
-      };
-      onUpdateCase(updated);
+  const handleConfirmReschedule = async () => {
+    if (!activeCase.appointmentId) return;
+    setErrorMessage(null);
+    setIsSaving(true);
+    try {
+      await AppointmentsService.reschedule(activeCase.appointmentId, rescheduleDate, rescheduleSlot);
+      await refreshCase();
+      setShowRescheduleModal(false);
+    } catch (err) {
+      setErrorMessage(apiErrorMessage(err, 'Unable to reschedule. Please try again.'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelAppointment = async () => {
+    if (!activeCase.appointmentId) return;
+    if (!confirm('Are you sure you want to cancel this inspection appointment? You can book again at any time.')) return;
+    setErrorMessage(null);
+    setIsSaving(true);
+    try {
+      await AppointmentsService.cancel(activeCase.appointmentId);
+      await refreshCase();
+    } catch (err) {
+      setErrorMessage(apiErrorMessage(err, 'Unable to cancel. Please try again.'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return (
     <div className="max-w-4xl space-y-8 pb-16">
-      
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -81,6 +93,10 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
         )}
       </div>
 
+      {errorMessage && (
+        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">{errorMessage}</div>
+      )}
+
       {activeCase.appointmentDate ? (
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
@@ -94,7 +110,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
             </div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 self-start sm:self-auto">
               <span className="w-2 h-2 rounded-full bg-blue-600" />
-              Confirmed (£99 Paid)
+              Confirmed
             </span>
           </div>
 
@@ -106,7 +122,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
               </div>
               <div className="flex items-center gap-2 text-slate-700 font-semibold">
                 <Clock className="w-4 h-4 text-blue-600" />
-                <span>{activeCase.appointmentTime || '10:00–11:00 AM'}</span>
+                <span>{activeCase.appointmentTime || 'Time to be confirmed'}</span>
               </div>
               <div className="flex items-center gap-2 text-slate-700">
                 <MapPin className="w-4 h-4 text-slate-400" />
@@ -117,7 +133,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
               <div className="flex items-center gap-2 text-slate-900 font-bold">
                 <User className="w-4 h-4 text-slate-600" />
-                <span>Technician: {activeCase.technicianName || 'Michael Vance'}</span>
+                <span>Technician: {activeCase.technicianName || 'To be assigned'}</span>
               </div>
               <p className="text-slate-500 leading-relaxed text-[11px]">
                 BPCA / RSPH Level 2 Certified Pest Management Professional equipped with ultrasonic optical camera, heat steaming system, and high-potency formulations.
@@ -181,10 +197,9 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({
                   onChange={(e) => setRescheduleDate(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-300 font-medium"
                 >
-                  <option value="Friday 27 Sep 2026">Friday 27 Sep 2026</option>
-                  <option value="Saturday 28 Sep 2026">Saturday 28 Sep 2026</option>
-                  <option value="Monday 30 Sep 2026">Monday 30 Sep 2026</option>
-                  <option value="Tuesday 01 Oct 2026">Tuesday 01 Oct 2026</option>
+                  {dateOptions.map((d) => (
+                    <option key={d.iso} value={d.iso}>{d.label}</option>
+                  ))}
                 </select>
               </div>
 

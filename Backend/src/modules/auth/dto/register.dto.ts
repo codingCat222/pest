@@ -3,5 +3,4 @@ export interface RegisterDto {
   password: string;
   fullName: string;
   phone?: string;
-  role?: 'CUSTOMER' | 'ADMIN' | 'TECHNICIAN';
 }

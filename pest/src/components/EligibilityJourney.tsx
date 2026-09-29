@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
-import { 
-  PestType, 
-  ActivityLocation, 
-  DurationOption, 
-  SightingOption, 
+import {
+  PestType,
+  ActivityLocation,
+  DurationOption,
+  SightingOption,
   EligibilitySubmission,
   CaseRecord
 } from '../types';
 import { INITIAL_PRODUCTS } from '../data/mockData';
-import { 
-  CheckCircle2, 
-  ArrowRight, 
-  ArrowLeft, 
-  Package, 
-  Truck, 
-  ShieldCheck, 
-  Clock, 
+import {
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Package,
+  Truck,
+  ShieldCheck,
+  Clock,
   X,
   CreditCard,
   Lock
@@ -35,12 +35,12 @@ export const EligibilityJourney: React.FC<EligibilityJourneyProps> = ({
   onOrderCompleted
 }) => {
   const [step, setStep] = useState<'questionnaire' | 'checkout' | 'confirmation'>('questionnaire');
-  
+
   const [pest, setPest] = useState<PestType>(initialPest);
   const [location, setLocation] = useState<ActivityLocation>(initialLocation);
   const [duration, setDuration] = useState<DurationOption>('1–4 weeks');
   const [sightings, setSightings] = useState<SightingOption[]>(['Droppings', 'Scratching/noises']);
-  
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -115,7 +115,7 @@ export const EligibilityJourney: React.FC<EligibilityJourneyProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full my-8 overflow-hidden border border-slate-200">
-        
+
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-blue-400" />
@@ -132,9 +132,9 @@ export const EligibilityJourney: React.FC<EligibilityJourneyProps> = ({
         {step === 'questionnaire' && (
           <form onSubmit={handleStartEligibilitySubmit} className="p-6 sm:p-8 space-y-6">
             <div>
-              <div className="text-xs font-bold text-blue-600 uppercase tracking-widest">
+              {/* <div className="text-xs font-bold text-blue-600 uppercase tracking-widest">
                 PAGE 11 — CHECK ELIGIBILITY / START JOURNEY
-              </div>
+              </div> */}
               <h2 className="text-2xl font-extrabold text-slate-900 mt-1">
                 Let's Get Started
               </h2>
@@ -154,11 +154,10 @@ export const EligibilityJourney: React.FC<EligibilityJourneyProps> = ({
                       key={item}
                       type="button"
                       onClick={() => setPest(item)}
-                      className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold border text-left transition-all ${
-                        pest === item
+                      className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold border text-left transition-all ${pest === item
                           ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/20'
                           : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
+                        }`}
                     >
                       {item}
                     </button>
@@ -176,11 +175,10 @@ export const EligibilityJourney: React.FC<EligibilityJourneyProps> = ({
                       key={item}
                       type="button"
                       onClick={() => setLocation(item)}
-                      className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold border text-left transition-all ${
-                        location === item
+                      className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold border text-left transition-all ${location === item
                           ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/20'
                           : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
+                        }`}
                     >
                       {item}
                     </button>
@@ -198,11 +196,10 @@ export const EligibilityJourney: React.FC<EligibilityJourneyProps> = ({
                       key={item}
                       type="button"
                       onClick={() => setDuration(item)}
-                      className={`py-2 px-3 rounded-xl text-xs font-medium border text-center transition-all ${
-                        duration === item
+                      className={`py-2 px-3 rounded-xl text-xs font-medium border text-center transition-all ${duration === item
                           ? 'border-blue-600 bg-blue-50 text-blue-900 font-bold'
                           : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
+                        }`}
                     >
                       {item}
                     </button>
@@ -229,11 +226,10 @@ export const EligibilityJourney: React.FC<EligibilityJourneyProps> = ({
                         key={item}
                         type="button"
                         onClick={() => toggleSighting(item)}
-                        className={`py-2 px-3 rounded-xl text-xs font-medium border flex items-center justify-between transition-all ${
-                          isSelected
+                        className={`py-2 px-3 rounded-xl text-xs font-medium border flex items-center justify-between transition-all ${isSelected
                             ? 'border-blue-600 bg-blue-50/80 text-blue-950 font-semibold'
                             : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                        }`}
+                          }`}
                       >
                         <span>{item}</span>
                         {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}

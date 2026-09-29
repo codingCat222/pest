@@ -4,7 +4,7 @@ import { CheckCircle2, Clock, ArrowLeft, ArrowRight, MapPin, CalendarCheck } fro
 
 interface BookProfessionalPageProps {
     currentCase: CaseRecord;
-    onBookingConfirmed: (date: string, time: string) => void;
+    onBookingConfirmed: (date: string, time: string, isoDate: string) => Promise<void>;
     onBack: () => void;
     onGoToDashboard: () => void;
 }
@@ -26,12 +26,14 @@ const INCLUDES = [
 ];
 
 function buildDates() {
-    const out: { label: string; date: string }[] = [];
+    const out: { label: string; date: string; iso: string }[] = [];
     const today = new Date();
     for (let i = 1; i <= 7; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
+        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         out.push({
+            iso,
             label: i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-GB', { weekday: 'long' }),
             date: d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
         });
@@ -50,16 +52,22 @@ export const BookProfessionalPage: React.FC<BookProfessionalPageProps> = ({
     const [selectedSlot, setSelectedSlot] = useState(SLOTS[1]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         setIsSubmitting(true);
-        setTimeout(() => {
-            onBookingConfirmed(selectedDate, selectedSlot);
-            setIsSubmitting(false);
+        try {
+            const iso = dates.find((d) => d.date === selectedDate)?.iso ?? dates[0].iso;
+            await onBookingConfirmed(selectedDate, selectedSlot, iso);
             setConfirmed(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 800);
+        } catch (err: any) {
+            setError(err?.response?.data?.error || 'Unable to book your appointment. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (confirmed) {
@@ -140,8 +148,8 @@ export const BookProfessionalPage: React.FC<BookProfessionalPageProps> = ({
                                     key={d.date}
                                     onClick={() => setSelectedDate(d.date)}
                                     className={`p-3 rounded-xl text-center border text-sm transition-all cursor-pointer ${selectedDate === d.date
-                                            ? 'bg-brand-green text-white border-brand-green font-bold shadow-sm'
-                                            : 'bg-white text-brand-purple border-brand-purple/15 hover:bg-brand-purple/5'
+                                        ? 'bg-brand-green text-white border-brand-green font-bold shadow-sm'
+                                        : 'bg-white text-brand-purple border-brand-purple/15 hover:bg-brand-purple/5'
                                         }`}
                                 >
                                     <div className="text-[11px] opacity-80">{d.label}</div>
@@ -162,8 +170,8 @@ export const BookProfessionalPage: React.FC<BookProfessionalPageProps> = ({
                                     key={slot}
                                     onClick={() => setSelectedSlot(slot)}
                                     className={`p-3.5 rounded-xl text-left border text-sm flex items-center justify-between transition-all cursor-pointer ${selectedSlot === slot
-                                            ? 'border-brand-green bg-brand-green/5 text-brand-purple font-bold'
-                                            : 'bg-white border-brand-purple/15 text-brand-purple/80 hover:bg-brand-purple/5'
+                                        ? 'border-brand-green bg-brand-green/5 text-brand-purple font-bold'
+                                        : 'bg-white border-brand-purple/15 text-brand-purple/80 hover:bg-brand-purple/5'
                                         }`}
                                 >
                                     <span className="flex items-center gap-2">
@@ -187,6 +195,7 @@ export const BookProfessionalPage: React.FC<BookProfessionalPageProps> = ({
                         </div>
                     </div>
 
+                    {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
                     <button
                         type="submit"
                         disabled={isSubmitting}

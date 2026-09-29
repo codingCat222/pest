@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const documents_controller_1 = require("./documents.controller");
+const auth_guard_1 = require("../../common/guards/auth.guard");
+const roles_guard_1 = require("../../common/guards/roles.guard");
+const router = (0, express_1.Router)();
+router.use(auth_guard_1.authGuard);
+router.get('/', documents_controller_1.DocumentsController.list);
+router.get('/case/:caseId', documents_controller_1.DocumentsController.getForCase);
+router.get('/:id', documents_controller_1.DocumentsController.getOne);
+router.post('/', (0, roles_guard_1.requireRole)('ADMIN', 'TECHNICIAN'), documents_controller_1.DocumentsController.create);
+router.delete('/:id', (0, roles_guard_1.requireRole)('ADMIN'), documents_controller_1.DocumentsController.remove);
+exports.default = router;

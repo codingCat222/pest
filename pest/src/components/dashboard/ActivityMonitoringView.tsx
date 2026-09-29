@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { CaseRecord } from '../../types';
-import { 
-  Activity, 
-  CheckCircle2, 
-  TrendingDown, 
-  Equal, 
-  TrendingUp, 
-  HelpCircle, 
-  Upload, 
-  Check, 
+import { ActivityReportsService } from '../../services/activityReports';
+import { CasesService } from '../../services/cases';
+import { apiErrorMessage } from '../../services/format';
+import {
+  Activity,
+  CheckCircle2,
+  TrendingDown,
+  Equal,
+  TrendingUp,
+  HelpCircle,
+  Upload,
+  Check,
   ArrowRight,
   Camera,
   Calendar
@@ -27,6 +30,8 @@ export const ActivityMonitoringView: React.FC<ActivityMonitoringViewProps> = ({
   const [comments, setComments] = useState('');
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const options = [
     {
@@ -71,33 +76,28 @@ export const ActivityMonitoringView: React.FC<ActivityMonitoringViewProps> = ({
     }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const updatedTimeline = [...activeCase.timeline];
-    updatedTimeline.push({
-      title: `Activity Report: ${selectedLevel}`,
-      date: 'Today',
-      completed: true,
-      details: comments ? `Customer note: "${comments}"` : `Logged observation: ${selectedLevel}`
-    });
-
-    const updated: CaseRecord = {
-      ...activeCase,
-      activityReported: selectedLevel,
-      activityNotes: comments || activeCase.activityNotes,
-      lastReportedDate: 'Today',
-      timeline: updatedTimeline
-    };
-
-    onUpdateCase(updated);
-    setIsSubmitted(true);
+    setSubmitError(null);
+    setIsSaving(true);
+    try {
+      await ActivityReportsService.create(activeCase.id, { activityLevel: selectedLevel, notes: comments });
+      const fresh = await CasesService.getById(activeCase.id);
+      onUpdateCase(fresh);
+      setComments('');
+      setIsSubmitted(true);
+    } catch (err) {
+      setSubmitError(apiErrorMessage(err, 'Unable to save your report. Please try again.'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const progressPercentage = Math.round((activeCase.monitoringDay / activeCase.monitoringDaysTotal) * 100);
 
   return (
     <div className="max-w-4xl space-y-8 pb-16">
-      
+
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Activity &amp; Monitoring
@@ -124,18 +124,22 @@ export const ActivityMonitoringView: React.FC<ActivityMonitoringViewProps> = ({
 
         <div className="space-y-1.5">
           <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-            <div 
-              className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" 
+            <div
+              className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
           <div className="flex justify-between text-[11px] font-semibold text-slate-400">
             <span>Day 1 (Start)</span>
-            <span>Day 4 (Current)</span>
+            <span>Day {activeCase.monitoringDay} (Current)</span>
             <span>Day 7 (Evaluation)</span>
           </div>
         </div>
       </div>
+
+      {submitError && (
+        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">{submitError}</div>
+      )}
 
       {isSubmitted ? (
         <div className="bg-white rounded-2xl p-8 border border-slate-200/90 text-center space-y-4 shadow-xs">
@@ -174,11 +178,10 @@ export const ActivityMonitoringView: React.FC<ActivityMonitoringViewProps> = ({
                   key={opt.level}
                   type="button"
                   onClick={() => setSelectedLevel(opt.level)}
-                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                    isSelected 
-                      ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/20' 
+                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${isSelected
+                      ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/20'
                       : 'border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className={`w-8 h-8 rounded-lg ${opt.bgColor} ${opt.color} flex items-center justify-center`}>
@@ -228,7 +231,7 @@ export const ActivityMonitoringView: React.FC<ActivityMonitoringViewProps> = ({
                 className="hidden"
                 id="fileMonitoringUpload"
               />
-              <label 
+              <label
                 htmlFor="fileMonitoringUpload"
                 className="mt-2 inline-block text-xs font-bold text-blue-600 hover:underline cursor-pointer"
               >
@@ -240,9 +243,10 @@ export const ActivityMonitoringView: React.FC<ActivityMonitoringViewProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              disabled={isSaving}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
-              <span>Submit Activity Report</span>
+              <span>{isSaving ? 'Saving...' : 'Submit Activity Report'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

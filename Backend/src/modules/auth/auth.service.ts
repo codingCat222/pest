@@ -4,7 +4,6 @@ import prisma from '../../lib/prisma';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
 const TOKEN_EXPIRY = '7d';
 
 export interface JwtPayload {
@@ -13,9 +12,43 @@ export interface JwtPayload {
   role: string;
 }
 
+function getSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw { status: 500, message: 'Server misconfigured: JWT_SECRET is not set' };
+  }
+  return secret;
+}
+
+function normalizeEmail(email: unknown): string {
+  return typeof email === 'string' ? email.trim().toLowerCase() : '';
+}
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+async function claimUnlinkedCases(userId: string, email: string) {
+  await prisma.case.updateMany({
+    where: { userId: null, customerEmail: email },
+    data: { userId },
+  });
+}
+
 export const AuthService = {
   async register(data: RegisterDto) {
-    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    const email = normalizeEmail(data.email);
+    const fullName = typeof data.fullName === 'string' ? data.fullName.trim() : '';
+
+    if (!EMAIL_REGEX.test(email)) {
+      throw { status: 400, message: 'Please provide a valid email address' };
+    }
+    if (!fullName) {
+      throw { status: 400, message: 'Full name is required' };
+    }
+    if (typeof data.password !== 'string' || data.password.length < 8) {
+      throw { status: 400, message: 'Password must be at least 8 characters' };
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       throw { status: 409, message: 'An account with this email already exists' };
     }
@@ -24,13 +57,15 @@ export const AuthService = {
 
     const user = await prisma.user.create({
       data: {
-        email: data.email,
+        email,
         passwordHash,
-        fullName: data.fullName,
-        phone: data.phone,
-        role: data.role || 'CUSTOMER',
+        fullName,
+        phone: data.phone?.trim() || undefined,
+        role: 'CUSTOMER',
       },
     });
+
+    await claimUnlinkedCases(user.id, email);
 
     const token = this.signToken({ userId: user.id, email: user.email, role: user.role });
 
@@ -38,7 +73,12 @@ export const AuthService = {
   },
 
   async login(data: LoginDto) {
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
+    const email = normalizeEmail(data.email);
+    if (!email || typeof data.password !== 'string' || !data.password) {
+      throw { status: 400, message: 'Email and password are required' };
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       throw { status: 401, message: 'Invalid email or password' };
     }
@@ -46,6 +86,10 @@ export const AuthService = {
     const valid = await bcrypt.compare(data.password, user.passwordHash);
     if (!valid) {
       throw { status: 401, message: 'Invalid email or password' };
+    }
+
+    if (user.role === 'CUSTOMER') {
+      await claimUnlinkedCases(user.id, email);
     }
 
     const token = this.signToken({ userId: user.id, email: user.email, role: user.role });
@@ -62,11 +106,11 @@ export const AuthService = {
   },
 
   signToken(payload: JwtPayload): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+    return jwt.sign(payload, getSecret(), { expiresIn: TOKEN_EXPIRY });
   },
 
   verifyToken(token: string): JwtPayload {
-    return jwt.verify(token, JWT_SECRET) as JwtPayload;
+    return jwt.verify(token, getSecret()) as JwtPayload;
   },
 
   sanitizeUser(user: any) {

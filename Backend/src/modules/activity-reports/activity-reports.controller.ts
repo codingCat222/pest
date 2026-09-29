@@ -4,7 +4,7 @@ import { ActivityReportsService } from './activity-reports.service';
 export const ActivityReportsController = {
   async getForCase(req: Request, res: Response) {
     try {
-      const reports = await ActivityReportsService.getForCase(req.params.caseId as string);
+      const reports = await ActivityReportsService.getForCase(req.params.caseId as string, (req as any).user);
       res.json(reports);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error fetching activity reports' });
@@ -13,7 +13,7 @@ export const ActivityReportsController = {
 
   async create(req: Request, res: Response) {
     try {
-      const report = await ActivityReportsService.create(req.body);
+      const report = await ActivityReportsService.create(req.body, (req as any).user);
       res.status(201).json(report);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error creating activity report' });

@@ -1,30 +1,38 @@
 import prisma from '../../lib/prisma';
 import { CreateCaseDto } from './dto/create-case.dto';
 import { UpdateCaseStatusDto } from './dto/update-case-status.dto';
+import { CASE_STATUSES } from '../../config/enums';
+import { AuthedUser, assertCaseAccess, isStaff } from '../../common/case-access';
 
 function generateReferenceNumber(): string {
   const num = Math.floor(10000 + Math.random() * 89999);
   return `FPP-${num}`;
 }
 
+const CASE_LIST_INCLUDE = {
+  timelineEntries: { orderBy: { date: 'asc' as const } },
+  photos: true,
+  proofingQuote: true,
+  appointments: { include: { technician: true }, orderBy: { date: 'asc' as const } },
+};
+
 export const CasesService = {
-  async list(requestingUser: { userId: string; role: string }) {
-    const isStaff = requestingUser.role === 'ADMIN' || requestingUser.role === 'TECHNICIAN';
+  async list(requestingUser: AuthedUser) {
     return prisma.case.findMany({
-      where: isStaff ? undefined : { userId: requestingUser.userId },
-      include: { timelineEntries: true },
+      where: isStaff(requestingUser) ? undefined : { userId: requestingUser.userId },
+      include: CASE_LIST_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
   },
 
-  async getOne(id: string, requestingUser: { userId: string; role: string }) {
+  async getOne(id: string, requestingUser: AuthedUser) {
     const caseRecord = await prisma.case.findUnique({
       where: { id },
       include: {
         timelineEntries: { orderBy: { date: 'asc' } },
         photos: true,
         proofingQuote: true,
-        appointments: true,
+        appointments: { include: { technician: true } },
         activityReports: true,
         orders: true,
         documents: true,
@@ -33,23 +41,31 @@ export const CasesService = {
 
     if (!caseRecord) return null;
 
-    const isStaff = requestingUser.role === 'ADMIN' || requestingUser.role === 'TECHNICIAN';
-    const isOwner = caseRecord.userId === requestingUser.userId;
-
-    if (!isStaff && !isOwner) {
+    if (!isStaff(requestingUser) && caseRecord.userId !== requestingUser.userId) {
       throw { status: 403, message: 'Forbidden: not your case' };
     }
 
     return caseRecord;
   },
 
-  async create(data: CreateCaseDto, requestingUser: { userId: string }) {
+  async create(data: CreateCaseDto, requestingUser: AuthedUser) {
+    let ownerId: string | null = requestingUser.userId;
+    if (isStaff(requestingUser)) {
+      if (data.userId) {
+        ownerId = data.userId;
+      } else {
+        const email = data.customerEmail?.trim().toLowerCase();
+        const customer = email ? await prisma.user.findUnique({ where: { email } }) : null;
+        ownerId = customer?.id ?? null;
+      }
+    }
+
     return prisma.case.create({
       data: {
         referenceNumber: generateReferenceNumber(),
         propertyName: data.propertyName,
         customerName: data.customerName,
-        customerEmail: data.customerEmail,
+        customerEmail: data.customerEmail?.trim().toLowerCase(),
         customerPhone: data.customerPhone,
         propertyAddress: data.propertyAddress,
         postcode: data.postcode,
@@ -59,16 +75,22 @@ export const CasesService = {
         productName: data.productName,
         deliveryFee: data.deliveryFee,
         courier: data.courier,
-        userId: requestingUser.userId,
+        userId: ownerId,
         timelineEntries: {
           create: [{ title: 'Product claimed', completed: true }],
         },
       },
-      include: { timelineEntries: true },
+      include: CASE_LIST_INCLUDE,
     });
   },
 
   async updateStatus(id: string, dto: UpdateCaseStatusDto) {
+    if (!CASE_STATUSES.includes(dto.status as any)) {
+      throw { status: 400, message: `Invalid status "${dto.status}"` };
+    }
+    const existing = await prisma.case.findUnique({ where: { id } });
+    if (!existing) throw { status: 404, message: 'Case not found' };
+
     return prisma.case.update({
       where: { id },
       data: {
@@ -77,17 +99,22 @@ export const CasesService = {
           create: [{ title: `Status changed to ${dto.status}`, completed: true, details: dto.note }],
         },
       },
-      include: { timelineEntries: true },
+      include: CASE_LIST_INCLUDE,
     });
   },
 
   async addTimelineEntry(id: string, title: string, details?: string) {
+    if (!title || typeof title !== 'string') throw { status: 400, message: 'Title is required' };
+    const existing = await prisma.case.findUnique({ where: { id } });
+    if (!existing) throw { status: 404, message: 'Case not found' };
+
     return prisma.timelineEntry.create({
       data: { caseId: id, title, completed: true, details },
     });
   },
 
-  async getTimeline(id: string) {
+  async getTimeline(id: string, requestingUser: AuthedUser) {
+    await assertCaseAccess(id, requestingUser);
     return prisma.timelineEntry.findMany({
       where: { caseId: id },
       orderBy: { date: 'asc' },

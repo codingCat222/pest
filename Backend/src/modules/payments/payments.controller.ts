@@ -4,7 +4,7 @@ import { PaymentsService } from './payments.service';
 export const PaymentsController = {
   async createIntent(req: Request, res: Response) {
     try {
-      const result = await PaymentsService.createIntent(req.body);
+      const result = await PaymentsService.createIntent(req.body, (req as any).user);
       res.status(201).json(result);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error creating payment intent' });
@@ -13,7 +13,7 @@ export const PaymentsController = {
 
   async confirm(req: Request, res: Response) {
     try {
-      const result = await PaymentsService.confirm(req.body);
+      const result = await PaymentsService.confirm(req.body, (req as any).user);
       res.json(result);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error confirming payment' });

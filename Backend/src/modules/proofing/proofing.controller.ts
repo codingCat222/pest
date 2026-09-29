@@ -4,7 +4,7 @@ import { ProofingService } from './proofing.service';
 export const ProofingController = {
   async getForCase(req: Request, res: Response) {
     try {
-      const quote = await ProofingService.getForCase(req.params.caseId as string);
+      const quote = await ProofingService.getForCase(req.params.caseId as string, (req as any).user);
       if (!quote) return res.status(404).json({ error: 'No proofing quote for this case' });
       res.json(quote);
     } catch (err: any) {
@@ -14,7 +14,7 @@ export const ProofingController = {
 
   async getOne(req: Request, res: Response) {
     try {
-      const quote = await ProofingService.getOne(req.params.id as string);
+      const quote = await ProofingService.getOne(req.params.id as string, (req as any).user);
       res.json(quote);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error fetching proofing quote' });
@@ -32,7 +32,7 @@ export const ProofingController = {
 
   async respond(req: Request, res: Response) {
     try {
-      const quote = await ProofingService.respond(req.params.id as string, req.body);
+      const quote = await ProofingService.respond(req.params.id as string, req.body, (req as any).user);
       res.json(quote);
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || 'Error responding to proofing quote' });

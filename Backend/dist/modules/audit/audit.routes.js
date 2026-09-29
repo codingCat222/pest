@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const audit_controller_1 = require("./audit.controller");
+const auth_guard_1 = require("../../common/guards/auth.guard");
+const roles_guard_1 = require("../../common/guards/roles.guard");
+const router = (0, express_1.Router)();
+router.use(auth_guard_1.authGuard);
+router.use((0, roles_guard_1.requireRole)('ADMIN'));
+router.get('/', audit_controller_1.AuditController.list);
+router.get('/:entityType/:entityId', audit_controller_1.AuditController.getForEntity);
+exports.default = router;

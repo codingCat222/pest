@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { CaseRecord } from '../../types';
+import { ProofingService } from '../../services/proofing';
+import { CasesService } from '../../services/cases';
+import { apiErrorMessage } from '../../services/format';
 import { ShieldAlert, CheckCircle2, AlertTriangle, Check, X, HelpCircle, FileText, Download } from 'lucide-react';
 
 interface ProofingViewProps {
@@ -13,36 +16,28 @@ export const ProofingView: React.FC<ProofingViewProps> = ({
 }) => {
   const quote = activeCase.proofingQuote;
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleAction = (status: 'accepted' | 'declined') => {
-    if (!quote) return;
-    const updated: CaseRecord = {
-      ...activeCase,
-      status: status === 'accepted' ? 'PROOFING_ACCEPTED' : activeCase.status,
-      proofingQuote: {
-        ...quote,
-        status,
-        acceptedAt: status === 'accepted' ? 'Today' : undefined
-      },
-      timeline: [
-        ...activeCase.timeline,
-        {
-          title: status === 'accepted' ? 'Proofing Quote Accepted' : 'Proofing Quote Declined',
-          date: 'Today',
-          completed: true,
-          details: status === 'accepted' 
-            ? `Customer accepted quotation ${quote.reference} (£${quote.total.toFixed(2)}). Works scheduled.`
-            : `Customer declined quotation ${quote.reference}.`
-        }
-      ]
-    };
-    onUpdateCase(updated);
-    setFeedbackMessage(status === 'accepted' ? 'Proofing quotation accepted! Our operations team will contact you to confirm materials fitting date.' : 'Quote has been marked as declined.');
+  const handleAction = async (status: 'accepted' | 'declined') => {
+    if (!quote || isSaving) return;
+    setErrorMessage(null);
+    setIsSaving(true);
+    try {
+      await ProofingService.respond(quote.id, status);
+      const fresh = await CasesService.getById(activeCase.id);
+      onUpdateCase(fresh);
+      setFeedbackMessage(status === 'accepted' ? 'Proofing quotation accepted! Our operations team will contact you to confirm materials fitting date.' : 'Quote has been marked as declined.');
+    } catch (err) {
+      setErrorMessage(apiErrorMessage(err, 'Unable to record your response. Please try again.'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="max-w-4xl space-y-8 pb-16">
-      
+
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Proofing &amp; Structural Exclusion
@@ -51,6 +46,10 @@ export const ProofingView: React.FC<ProofingViewProps> = ({
           Inspection findings and quotations to seal physical ingress routes into {activeCase.propertyName}.
         </p>
       </div>
+
+      {errorMessage && (
+        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">{errorMessage}</div>
+      )}
 
       {feedbackMessage && (
         <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between">
@@ -63,7 +62,7 @@ export const ProofingView: React.FC<ProofingViewProps> = ({
 
       {quote ? (
         <div className="space-y-6">
-          
+
           <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
               <div>
@@ -78,13 +77,12 @@ export const ProofingView: React.FC<ProofingViewProps> = ({
                 </div>
               </div>
 
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border self-start sm:self-auto ${
-                quote.status === 'accepted'
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border self-start sm:self-auto ${quote.status === 'accepted'
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                   : quote.status === 'declined'
-                  ? 'bg-slate-100 text-slate-700 border-slate-200'
-                  : 'bg-amber-50 text-amber-800 border-amber-200'
-              }`}>
+                    ? 'bg-slate-100 text-slate-700 border-slate-200'
+                    : 'bg-amber-50 text-amber-800 border-amber-200'
+                }`}>
                 {quote.status === 'accepted' && <Check className="w-3.5 h-3.5 text-emerald-600" />}
                 <span>Status: {quote.status.toUpperCase()}</span>
               </span>
@@ -94,11 +92,13 @@ export const ProofingView: React.FC<ProofingViewProps> = ({
               {(quote.findings || []).map((f) => (
                 <div key={f.id} className="rounded-xl border border-slate-200/80 bg-slate-50 overflow-hidden flex flex-col justify-between">
                   <div className="h-36 bg-slate-200 overflow-hidden relative">
-                    <img 
-                      src={f.imageUrl} 
-                      alt={f.title}
-                      className="w-full h-full object-cover"
-                    />
+                    {f.imageUrl && (
+                      <img
+                        src={f.imageUrl}
+                        alt={f.title}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                     <span className="absolute top-2 right-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-900/80 text-white backdrop-blur-xs">
                       {f.severity} priority
                     </span>
@@ -162,20 +162,22 @@ export const ProofingView: React.FC<ProofingViewProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAction('accepted')}
-                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                  disabled={isSaving}
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-60"
                 >
                   Accept Quote (£{quote.total.toFixed(2)})
                 </button>
                 <button
                   type="button"
                   onClick={() => handleAction('declined')}
-                  className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                  disabled={isSaving}
+                  className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors cursor-pointer disabled:opacity-60"
                 >
                   Decline
                 </button>
                 <button
                   type="button"
-                  onClick={() => alert('Support enquiry sent for Quote ' + quote.reference + '. A technical lead will phone you back.')}
+                  onClick={() => { window.location.href = `mailto:support@freepestproducts.co.uk?subject=${encodeURIComponent('Question about proofing quote ' + (quote.reference ?? ''))}`; }}
                   className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
                 >
                   Ask a Question

@@ -70,9 +70,9 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
                     ← Back
                 </button>
 
-                <div className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">
+                {/* <div className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">
                     Page 11 — Check Eligibility / Start Journey
-                </div>
+                </div> */}
                 <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                     Let's Get Started
                 </h1>

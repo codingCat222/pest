@@ -1,4 +1,5 @@
 import prisma from '../../lib/prisma';
+import { AuthedUser, assertCaseAccess } from '../../common/case-access';
 
 export interface ProofingFinding {
   label: string;
@@ -31,15 +32,17 @@ function serialize(quote: any) {
 }
 
 export const ProofingService = {
-  async getForCase(caseId: string) {
+  async getForCase(caseId: string, user: AuthedUser) {
+    await assertCaseAccess(caseId, user);
     const quote = await prisma.proofingQuote.findUnique({ where: { caseId } });
     if (!quote) return null;
     return serialize(quote);
   },
 
-  async getOne(id: string) {
+  async getOne(id: string, user: AuthedUser) {
     const quote = await prisma.proofingQuote.findUnique({ where: { id } });
     if (!quote) throw { status: 404, message: 'Proofing quote not found' };
+    await assertCaseAccess(quote.caseId, user);
     return serialize(quote);
   },
 
@@ -79,9 +82,17 @@ export const ProofingService = {
     return serialize(quote);
   },
 
-  async respond(id: string, dto: RespondProofingQuoteDto) {
+  async respond(id: string, dto: RespondProofingQuoteDto, user: AuthedUser) {
     const quote = await prisma.proofingQuote.findUnique({ where: { id } });
     if (!quote) throw { status: 404, message: 'Proofing quote not found' };
+    await assertCaseAccess(quote.caseId, user);
+
+    if (dto.status !== 'accepted' && dto.status !== 'declined') {
+      throw { status: 400, message: 'Status must be "accepted" or "declined"' };
+    }
+    if (quote.status !== 'pending') {
+      throw { status: 409, message: `This quote has already been ${quote.status}` };
+    }
 
     const updated = await prisma.proofingQuote.update({
       where: { id },
@@ -93,7 +104,21 @@ export const ProofingService = {
 
     await prisma.case.update({
       where: { id: quote.caseId },
-      data: { status: dto.status === 'accepted' ? 'PROOFING_ACCEPTED' : 'PROOFING_RECOMMENDED' },
+      data: {
+        status: dto.status === 'accepted' ? 'PROOFING_ACCEPTED' : 'PROOFING_RECOMMENDED',
+        timelineEntries: {
+          create: [
+            {
+              title: dto.status === 'accepted' ? 'Proofing Quote Accepted' : 'Proofing Quote Declined',
+              completed: true,
+              details:
+                dto.status === 'accepted'
+                  ? `Customer accepted quotation ${quote.reference ?? ''} (£${quote.total.toFixed(2)}).`
+                  : `Customer declined quotation ${quote.reference ?? ''}.`,
+            },
+          ],
+        },
+      },
     });
 
     return serialize(updated);

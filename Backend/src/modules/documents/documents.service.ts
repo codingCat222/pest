@@ -1,4 +1,5 @@
 import prisma from '../../lib/prisma';
+import { AuthedUser, assertCaseAccess, isStaff } from '../../common/case-access';
 
 export interface CreateDocumentDto {
   caseId: string;
@@ -10,13 +11,23 @@ export interface CreateDocumentDto {
 }
 
 export const DocumentsService = {
-  async getForCase(caseId: string) {
+  async list(user: AuthedUser) {
+    return prisma.document.findMany({
+      where: isStaff(user) ? undefined : { case: { userId: user.userId } },
+      include: { case: { select: { referenceNumber: true } } },
+      orderBy: { date: 'desc' },
+    });
+  },
+
+  async getForCase(caseId: string, user: AuthedUser) {
+    await assertCaseAccess(caseId, user);
     return prisma.document.findMany({ where: { caseId }, orderBy: { date: 'desc' } });
   },
 
-  async getOne(id: string) {
+  async getOne(id: string, user: AuthedUser) {
     const doc = await prisma.document.findUnique({ where: { id } });
     if (!doc) throw { status: 404, message: 'Document not found' };
+    await assertCaseAccess(doc.caseId, user);
     return doc;
   },
 

@@ -1,9 +1,9 @@
 import prisma from '../../lib/prisma';
 import { StripeProvider } from './stripe.provider';
+import { AuthedUser, assertCaseAccess } from '../../common/case-access';
 
 export interface CreatePaymentIntentDto {
   caseId: string;
-  amount: number;
   currency?: string;
 }
 
@@ -11,16 +11,16 @@ export interface ConfirmPaymentDto {
   paymentIntentId: string;
 }
 
-// Note: there is no dedicated Payment model in the schema yet. Payment state
-// is tracked via Case.status and Order.status. If you want a full payment
-// history/ledger, add a `Payment` model to schema.prisma and wire it in here.
+
 
 export const PaymentsService = {
-  async createIntent(data: CreatePaymentIntentDto) {
-    const caseRecord = await prisma.case.findUnique({ where: { id: data.caseId } });
-    if (!caseRecord) throw { status: 404, message: 'Case not found' };
+  async createIntent(data: CreatePaymentIntentDto, user: AuthedUser) {
+    const caseRecord = await assertCaseAccess(data.caseId, user);
+    if (!(caseRecord.deliveryFee > 0)) {
+      throw { status: 400, message: 'This case has no delivery fee to pay' };
+    }
 
-    const intent = await StripeProvider.createPaymentIntent(data.amount, data.currency ?? 'gbp', {
+    const intent = await StripeProvider.createPaymentIntent(caseRecord.deliveryFee, data.currency ?? 'gbp', {
       caseId: data.caseId,
     });
 
@@ -35,7 +35,7 @@ export const PaymentsService = {
     };
   },
 
-  async confirm(data: ConfirmPaymentDto) {
+  async confirm(data: ConfirmPaymentDto, user: AuthedUser) {
     const intent = await StripeProvider.retrievePaymentIntent(data.paymentIntentId);
 
     if (intent.status !== 'succeeded') {
@@ -44,6 +44,11 @@ export const PaymentsService = {
 
     const caseId = intent.metadata?.caseId;
     if (!caseId) throw { status: 400, message: 'Payment intent missing case reference' };
+
+    const caseRecord = await assertCaseAccess(caseId, user);
+    if (intent.amount !== Math.round(caseRecord.deliveryFee * 100)) {
+      throw { status: 400, message: 'Payment amount does not match the delivery fee' };
+    }
 
     return prisma.case.update({
       where: { id: caseId },

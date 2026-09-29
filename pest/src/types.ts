@@ -159,6 +159,7 @@ export interface CaseRecord {
   activityNotes?: string;
   lastReportedDate?: string;
   photos?: string[];
+  appointmentId?: string;
   appointmentDate?: string;
   appointmentTime?: string;
   appointmentStatus?: 'Scheduled' | 'Completed' | 'Pending';
@@ -205,4 +206,5 @@ export interface DocumentItem {
   date: string;
   size: string;
   caseRef: string;
+  fileUrl?: string;
 }

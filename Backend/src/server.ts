@@ -17,7 +17,8 @@ import { PaymentsController } from './modules/payments/payments.controller';
 
 const app: Express = express();
 
-app.use(cors());
+const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean);
+app.use(cors({ origin: allowedOrigins && allowedOrigins.length > 0 ? allowedOrigins : true }));
 
 // Stripe webhooks need the raw request body to verify the signature, so this
 // route is mounted BEFORE express.json() with its own raw body parser.
@@ -48,7 +49,10 @@ app.use((req: Request, res: Response) => {
     res.status(404).json({ error: 'Not found', path: req.originalUrl });
 });
 
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    if (err && typeof err.status === 'number' && err.status < 500) {
+        return res.status(err.status).json({ error: err.message || 'Request failed' });
+    }
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
 });

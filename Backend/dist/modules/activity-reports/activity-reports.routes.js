@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const activity_reports_controller_1 = require("./activity-reports.controller");
+const auth_guard_1 = require("../../common/guards/auth.guard");
+const router = (0, express_1.Router)();
+router.use(auth_guard_1.authGuard);
+router.get('/case/:caseId', activity_reports_controller_1.ActivityReportsController.getForCase);
+router.post('/', activity_reports_controller_1.ActivityReportsController.create);
+exports.default = router;

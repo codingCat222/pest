@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
-import { MOCK_ORDERS } from '../../data/mockData';
+import React, { useEffect, useState } from 'react';
+import { OrdersService } from '../../services/orders';
+import { apiErrorMessage } from '../../services/format';
 import { OrderItemRecord } from '../../types';
 import { Package, Truck, CheckCircle2, Download, ArrowUpRight, X } from 'lucide-react';
 
 export const MyOrdersView: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<OrderItemRecord | null>(null);
+  const [orders, setOrders] = useState<OrderItemRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    OrdersService.list()
+      .then((data) => { if (!cancelled) setOrders(data); })
+      .catch((err) => { if (!cancelled) setError(apiErrorMessage(err, 'Unable to load your orders.')); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="max-w-5xl space-y-8 pb-16">
-      
+
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           My Orders
@@ -32,7 +45,16 @@ export const MyOrdersView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {MOCK_ORDERS.map((ord) => (
+              {loading && (
+                <tr><td colSpan={6} className="py-10 text-center text-slate-500">Loading your orders...</td></tr>
+              )}
+              {!loading && error && (
+                <tr><td colSpan={6} className="py-10 text-center text-red-600 font-semibold">{error}</td></tr>
+              )}
+              {!loading && !error && orders.length === 0 && (
+                <tr><td colSpan={6} className="py-10 text-center text-slate-500">You don't have any orders yet.</td></tr>
+              )}
+              {orders.map((ord) => (
                 <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
                   <td className="py-4 px-4 sm:px-6 font-mono font-bold text-slate-900">
                     {ord.orderNumber}
@@ -48,8 +70,8 @@ export const MyOrdersView: React.FC = () => {
                     </span>
                   </td>
                   <td className="py-4 px-4 text-slate-600">
-                    <div className="font-medium text-slate-800">{ord.carrier}</div>
-                    <div className="text-[10px] font-mono text-slate-400">{ord.trackingNumber}</div>
+                    <div className="font-medium text-slate-800">{ord.carrier || '—'}</div>
+                    <div className="text-[10px] font-mono text-slate-400">{ord.trackingNumber || 'Tracking pending'}</div>
                   </td>
                   <td className="py-4 px-4 text-slate-600 whitespace-nowrap">
                     {ord.placedDate}
@@ -109,17 +131,17 @@ export const MyOrdersView: React.FC = () => {
             <div className="space-y-1 text-xs">
               <div className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Delivery Address</div>
               <div className="text-slate-700">{selectedOrder.propertyAddress}</div>
-              <div className="text-slate-500 text-[11px]">Courier: {selectedOrder.carrier} ({selectedOrder.trackingNumber})</div>
+              <div className="text-slate-500 text-[11px]">Courier: {selectedOrder.carrier || '—'} ({selectedOrder.trackingNumber || 'tracking pending'})</div>
             </div>
 
             <div className="pt-2 flex items-center justify-between gap-3">
               <button
                 type="button"
-                onClick={() => alert(`Downloading VAT invoice for ${selectedOrder.orderNumber}...`)}
+                onClick={() => window.print()}
                 className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:underline cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Download Receipt</span>
+                <span>Print Receipt</span>
               </button>
 
               <button
