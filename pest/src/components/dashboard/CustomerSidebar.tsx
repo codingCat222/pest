@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CustomerNavTab, CaseRecord, PortalPersona } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { Avatar } from '../Avatar';
 import {
   LayoutDashboard,
   Compass,
@@ -318,9 +319,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-100/70 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                {displayName ? displayName.trim().slice(0, 2).toUpperCase() : '—'}
-              </div>
+              <Avatar name={displayName} src={user?.avatarUrl} className="w-8 h-8 text-xs" />
               <div className="text-left min-w-0">
                 <div className="text-xs font-semibold text-slate-900 truncate">
                   {displayName || 'My account'}

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Avatar } from '../Avatar';
+import { useAuth } from '../../context/AuthContext';
 import { AdminNavTab } from '../../types';
 import {
     LayoutDashboard,
@@ -41,6 +43,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     pendingProofingCount,
     activeCasesCount,
 }) => {
+    const { user } = useAuth();
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
     const groups = Array.from(new Set(NAV_ITEMS.map((i) => i.group)));
@@ -86,8 +89,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                                             type="button"
                                             onClick={() => onSelectTab(tab)}
                                             className={`w-full relative flex items-center justify-between px-3 h-10 rounded-lg text-sm transition-colors cursor-pointer ${currentTab === tab
-                                                    ? 'bg-slate-100 text-slate-900 font-semibold'
-                                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                                ? 'bg-slate-100 text-slate-900 font-semibold'
+                                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -119,12 +122,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                         className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-100/70 transition-colors cursor-pointer"
                     >
                         <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-blue-700 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                                OP
-                            </div>
+                            <Avatar name={user?.fullName} src={user?.avatarUrl} className="w-8 h-8 text-xs" />
                             <div className="text-left min-w-0">
                                 <div className="text-xs font-semibold text-slate-900 truncate">
-                                    Operations Admin
+                                    {user?.fullName ?? 'Operations Admin'}
                                 </div>
                                 <div className="text-[10px] text-slate-400 truncate">
                                     Headquarters

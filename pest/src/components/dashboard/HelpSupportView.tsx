@@ -3,7 +3,7 @@ import { Phone, Mail, Clock, MessageSquare, Check, ShieldCheck } from 'lucide-re
 import { CaseRecord } from '../../types';
 
 interface HelpSupportViewProps {
-  activeCase: CaseRecord;
+  activeCase: CaseRecord | null;
 }
 
 export const HelpSupportView: React.FC<HelpSupportViewProps> = ({ activeCase }) => {
@@ -22,13 +22,13 @@ export const HelpSupportView: React.FC<HelpSupportViewProps> = ({ activeCase }) 
 
   return (
     <div className="max-w-4xl space-y-8 pb-16">
-      
+
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Help &amp; Customer Support
         </h1>
         <p className="mt-1 text-sm text-slate-500">
-          Direct assistance for your active case #{activeCase.referenceNumber} at {activeCase.propertyAddress}.
+          {activeCase ? `Direct assistance for your active case #${activeCase.referenceNumber} at ${activeCase.propertyAddress}.` : 'Get in touch with our team about your account or order.'}
         </p>
       </div>
 
@@ -71,7 +71,7 @@ export const HelpSupportView: React.FC<HelpSupportViewProps> = ({ activeCase }) 
             <Check className="w-8 h-8 text-emerald-600 mx-auto" />
             <h3 className="font-bold text-slate-900 text-sm">Ticket Submitted</h3>
             <p className="text-xs text-slate-600">
-              Reference #{activeCase.referenceNumber}-SPT generated. Our technical desk will contact you shortly.
+              Reference #{activeCase ? `${activeCase.referenceNumber}-SPT` : 'SPT'} generated. Our technical desk will contact you shortly.
             </p>
             <button
               type="button"

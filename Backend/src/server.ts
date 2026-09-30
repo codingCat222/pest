@@ -23,7 +23,7 @@ app.use(cors({ origin: allowedOrigins && allowedOrigins.length > 0 ? allowedOrig
 
 app.post('/payments/webhook', express.raw({ type: 'application/json' }), PaymentsController.webhook);
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/health', (_req: Request, res: Response) => {

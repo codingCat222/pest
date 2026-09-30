@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { AuthService, AuthUser, LoginPayload, RegisterPayload } from '../services/auth';
+import { AuthService, AuthUser, LoginPayload, RegisterPayload, UpdateProfilePayload } from '../services/auth';
 
 interface AuthContextValue {
     user: AuthUser | null;
@@ -8,6 +8,7 @@ interface AuthContextValue {
     login: (payload: LoginPayload) => Promise<AuthUser>;
     register: (payload: RegisterPayload) => Promise<AuthUser>;
     logout: () => Promise<void>;
+    updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -52,6 +53,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
     }, []);
 
+    const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
+        const updated = await AuthService.updateProfile(payload);
+        setUser(updated);
+        return updated;
+    }, []);
+
     return (
         <AuthContext.Provider
             value={{
@@ -61,6 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 login,
                 register,
                 logout,
+                updateProfile,
             }}
         >
             {children}

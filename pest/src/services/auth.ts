@@ -7,6 +7,7 @@ export interface AuthUser {
     email: string;
     fullName: string;
     phone?: string;
+    avatarUrl?: string | null;
     role: UserRole;
     createdAt: string;
     updatedAt: string;
@@ -22,7 +23,12 @@ export interface RegisterPayload {
     password: string;
     fullName: string;
     phone?: string;
-    role?: UserRole;
+}
+
+export interface UpdateProfilePayload {
+    fullName?: string;
+    phone?: string | null;
+    avatarUrl?: string | null;
 }
 
 export interface AuthResponse {
@@ -56,6 +62,12 @@ export const AuthService = {
 
     async me(): Promise<AuthUser> {
         const { data } = await api.get<AuthUser>('/auth/me');
+        localStorage.setItem(USER_KEY, JSON.stringify(data));
+        return data;
+    },
+
+    async updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
+        const { data } = await api.patch<AuthUser>('/auth/me', payload);
         localStorage.setItem(USER_KEY, JSON.stringify(data));
         return data;
     },

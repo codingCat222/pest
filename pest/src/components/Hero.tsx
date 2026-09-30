@@ -251,20 +251,20 @@ export const Hero: React.FC<HeroProps> = ({
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-6 px-4">
-              <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">7 days</div>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-5 px-3 sm:py-6 sm:px-4">
+              <div className="text-xl sm:text-3xl md:text-xl lg:text-3xl xl:text-4xl font-extrabold text-brand-purple tracking-tight leading-tight break-words">7 days</div>
               <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">Free monitoring period</div>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-6 px-4">
-              <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight uppercase">3 Products</div>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-5 px-3 sm:py-6 sm:px-4">
+              <div className="text-xl sm:text-3xl md:text-xl lg:text-3xl xl:text-4xl font-extrabold text-brand-purple tracking-tight leading-tight break-words">3 Products</div>
               <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">ultrasonic repellent, bait box and traps</div>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-6 px-4">
-              <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">£0</div>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-5 px-3 sm:py-6 sm:px-4">
+              <div className="text-xl sm:text-3xl md:text-xl lg:text-3xl xl:text-4xl font-extrabold text-brand-purple tracking-tight leading-tight break-words">£0</div>
               <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">Product cost, pay delivery only</div>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-6 px-4">
-              <div className="text-3xl sm:text-4xl font-extrabold text-brand-purple tracking-tight">40% Cheaper</div>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-5 px-3 sm:py-6 sm:px-4">
+              <div className="text-xl sm:text-3xl md:text-xl lg:text-3xl xl:text-4xl font-extrabold text-brand-purple tracking-tight leading-tight break-words">40% Cheaper</div>
               <div className="mt-1 text-xs sm:text-sm text-brand-green font-semibold">process allows savings</div>
             </div>
           </div>

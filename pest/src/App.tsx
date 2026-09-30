@@ -56,7 +56,7 @@ import { ActivityReportsService } from './services/activityReports';
 import { AppointmentsService } from './services/appointments';
 import { apiErrorMessage } from './services/format';
 
-function EmptyDashboard() {
+function EmptyDashboard({ onCheckEligibility }: { onCheckEligibility: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center gap-4 max-w-md mx-auto">
       <div className="w-12 h-12 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center">
@@ -68,35 +68,30 @@ function EmptyDashboard() {
           Your treatment journey will appear here once your order is set up.
         </p>
       </div>
+      <button
+        type="button"
+        onClick={onCheckEligibility}
+        className="px-6 py-3 bg-brand-green hover:bg-brand-green-dark text-white font-bold text-sm rounded-xl shadow-sm transition-colors cursor-pointer"
+      >
+        Check eligibility
+      </button>
     </div>
   );
 }
 
-const PAGE_PATHS: Record<string, string> = {
-  home: '/',
-  'how-it-works': '/how-it-works',
-  'free-products': '/free-products',
-  'rats-mice': '/pests/rats-mice',
-  bedbugs: '/pests/bedbugs',
-  cockroaches: '/pests/cockroaches',
-  foxes: '/pests/foxes',
-  ants: '/pests/ants',
-  other: '/pests/other',
-  'professional-treatment': '/professional-treatment',
-  proofing: '/proofing',
-  faqs: '/faqs',
-  'about-us': '/about',
-  contact: '/contact',
-  terms: '/terms',
-  privacy: '/privacy',
-  cookies: '/cookies',
-  dashboard: '/dashboard',
-  admin: '/admin',
-  login: '/login',
-  signup: '/signup',
-};
-
-const pagePath = (page: string) => PAGE_PATHS[page] ?? `/${page}`;
+function NoCaseNotice({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 text-center gap-4 max-w-md mx-auto">
+      <div className="w-12 h-12 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center">
+        <Inbox className="w-6 h-6" />
+      </div>
+      <div>
+        <h2 className="font-bold text-brand-purple">{title}</h2>
+        <p className="text-sm text-brand-purple/70 mt-1">{message}</p>
+      </div>
+    </div>
+  );
+}
 
 // ---------- Public site layout (navbar + footer wrap every public page) ----------
 function PublicLayout({
@@ -134,7 +129,7 @@ function PublicLayout({
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-brand-green selection:text-white">
       <Navbar
-        onNavigate={(page) => navigate(pagePath(page))}
+        onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
         onOpenEligibility={() => goToEligibility()}
         onOpenLogin={() => navigate('/login')}
         onOpenSignup={() => navigate('/signup')}
@@ -154,20 +149,19 @@ function PublicLayout({
           />
           <Route path="/how-it-works" element={<HowItWorksPage onStartEligibility={() => goToEligibility()} onBookProfessional={goToBooking} />} />
           <Route path="/free-products" element={<FreeProductsPage onStartEligibility={() => goToEligibility()} />} />
-          <Route path="/pests/rats-mice" element={<PestHubPage pestKey="rats-mice" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Rats or mice')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
-          <Route path="/pests/bedbugs" element={<PestHubPage pestKey="bedbugs" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Bedbugs')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
-          <Route path="/pests/cockroaches" element={<PestHubPage pestKey="cockroaches" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Cockroaches')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
-          <Route path="/pests/foxes" element={<PestHubPage pestKey="foxes" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Foxes')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
-          <Route path="/pests/ants" element={<PestHubPage pestKey="ants" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Ants')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
-          <Route path="/pests/other" element={<PestHubPage pestKey="other" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Other')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/pests/rats-mice" element={<PestHubPage pestKey="rats-mice" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Rats or mice')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/pests/bedbugs" element={<PestHubPage pestKey="bedbugs" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Bedbugs')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/pests/cockroaches" element={<PestHubPage pestKey="cockroaches" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Cockroaches')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/pests/foxes" element={<PestHubPage pestKey="foxes" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Foxes')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/pests/ants" element={<PestHubPage pestKey="ants" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Ants')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
           <Route path="/professional-treatment" element={<ProfessionalTreatmentPage onBookProfessional={goToBooking} />} />
           <Route path="/proofing" element={<ProofingPage onStartEligibility={() => goToEligibility()} onBookProfessional={goToBooking} />} />
           <Route path="/faqs" element={<FaqsPage onStartEligibility={() => goToEligibility()} />} />
           <Route path="/about" element={<AboutUsPage onStartEligibility={() => goToEligibility()} />} />
-          <Route path="/contact" element={<ContactPage onNavigate={(page) => navigate(pagePath(page))} />} />
-          <Route path="/terms" element={<LegalPage initialSection="terms" onNavigate={(page) => navigate(pagePath(page))} />} />
-          <Route path="/privacy" element={<LegalPage initialSection="privacy" onNavigate={(page) => navigate(pagePath(page))} />} />
-          <Route path="/cookies" element={<LegalPage initialSection="cookies" onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/contact" element={<ContactPage onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/terms" element={<LegalPage initialSection="terms" onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/privacy" element={<LegalPage initialSection="privacy" onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/cookies" element={<LegalPage initialSection="cookies" onNavigate={(page) => navigate(`/${page}`)} />} />
           <Route path="/check-eligibility" element={<EligibilityPage onOrderCompleted={handleOrderCompleted} />} />
           <Route
             path="/checkout/:caseId"
@@ -200,7 +194,7 @@ function PublicLayout({
                   onLoginSuccess(role);
                   navigate(role === 'admin' ? '/admin' : '/dashboard');
                 }}
-                onNavigate={(page) => navigate(pagePath(page))}
+                onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
               />
             }
           />
@@ -212,7 +206,7 @@ function PublicLayout({
                   onLoginSuccess('customer');
                   navigate('/dashboard');
                 }}
-                onNavigate={(page) => navigate(pagePath(page))}
+                onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
               />
             }
           />
@@ -220,13 +214,13 @@ function PublicLayout({
       </main>
 
       <Footer
-        onNavigate={(page) => navigate(pagePath(page))}
+        onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
         onOpenEligibility={() => goToEligibility()}
         onOpenBooking={goToBooking}
         onOpenLogin={() => navigate('/login')}
       />
 
-      <CookieBanner onNavigate={(type) => navigate(pagePath(type))} />
+      <CookieBanner onNavigate={(type) => navigate(`/${type}`)} />
     </div>
   );
 }
@@ -287,6 +281,8 @@ function DashboardLayout({
           activeCase={activeCase}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
           onSwitchPersona={() => navigate('/')}
+          onOpenAccount={() => goTab('account')}
+          onSignOut={signOut}
         />
 
         <main className="flex-1 max-w-[1360px] w-full mx-auto p-4 sm:p-6 lg:p-8">
@@ -309,20 +305,63 @@ function DashboardLayout({
             <p className="py-24 text-center text-sm font-semibold text-red-600">{casesError}</p>
           ) : casesStatus !== 'ready' ? (
             <p className="py-24 text-center text-sm text-slate-500">Loading your dashboard...</p>
-          ) : activeCase ? (
+          ) : (
             <Routes>
-              <Route path="/" element={<DashboardOverview activeCase={activeCase} onNavigateTab={goTab} onOpenReportModal={onOpenReport} onOpenBookingModal={goToBooking} onOpenQuoteModal={() => goTab('proofing')} onUpdateCase={onUpdateActiveCase} />} />
-              <Route path="/journey" element={<MyJourneyView activeCase={activeCase} onNavigateTab={goTab} onOpenReportModal={onOpenReport} />} />
-              <Route path="/monitoring" element={<ActivityMonitoringView activeCase={activeCase} onUpdateCase={onUpdateActiveCase} />} />
+              <Route
+                path="/"
+                element={
+                  activeCase ? (
+                    <DashboardOverview activeCase={activeCase} onNavigateTab={goTab} onOpenReportModal={onOpenReport} onOpenBookingModal={goToBooking} onOpenQuoteModal={() => goTab('proofing')} onUpdateCase={onUpdateActiveCase} />
+                  ) : (
+                    <EmptyDashboard onCheckEligibility={() => navigate('/check-eligibility')} />
+                  )
+                }
+              />
+              <Route
+                path="/journey"
+                element={
+                  activeCase ? (
+                    <MyJourneyView activeCase={activeCase} onNavigateTab={goTab} onOpenReportModal={onOpenReport} />
+                  ) : (
+                    <NoCaseNotice title="Your journey starts here" message="Your step-by-step journey will appear once you've claimed a product." />
+                  )
+                }
+              />
+              <Route
+                path="/monitoring"
+                element={
+                  activeCase ? (
+                    <ActivityMonitoringView activeCase={activeCase} onUpdateCase={onUpdateActiveCase} />
+                  ) : (
+                    <NoCaseNotice title="Nothing to monitor yet" message="Activity reporting opens once your product has been delivered." />
+                  )
+                }
+              />
               <Route path="/orders" element={<MyOrdersView />} />
-              <Route path="/appointments" element={<AppointmentsView activeCase={activeCase} onOpenBookingModal={goToBooking} onUpdateCase={onUpdateActiveCase} />} />
-              <Route path="/proofing" element={<ProofingView activeCase={activeCase} onUpdateCase={onUpdateActiveCase} />} />
+              <Route
+                path="/appointments"
+                element={
+                  activeCase ? (
+                    <AppointmentsView activeCase={activeCase} onOpenBookingModal={goToBooking} onUpdateCase={onUpdateActiveCase} />
+                  ) : (
+                    <NoCaseNotice title="No appointments yet" message="Professional visits you book will appear here." />
+                  )
+                }
+              />
+              <Route
+                path="/proofing"
+                element={
+                  activeCase ? (
+                    <ProofingView activeCase={activeCase} onUpdateCase={onUpdateActiveCase} />
+                  ) : (
+                    <NoCaseNotice title="No proofing quotes yet" message="If proofing is recommended after a visit, your quote will appear here." />
+                  )
+                }
+              />
               <Route path="/documents" element={<DocumentsView />} />
               <Route path="/account" element={<AccountSettingsView activeCase={activeCase} />} />
               <Route path="/help" element={<HelpSupportView activeCase={activeCase} />} />
             </Routes>
-          ) : (
-            <EmptyDashboard />
           )}
         </main>
 

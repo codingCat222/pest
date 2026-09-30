@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Avatar } from '../Avatar';
+import { useAuth } from '../../context/AuthContext';
 import { AdminNavTab } from '../../types';
 import { Bell, ChevronRight, Menu, ScrollText } from 'lucide-react';
 
@@ -24,6 +26,7 @@ export const AdminTopHeader: React.FC<AdminTopHeaderProps> = ({
     onOpenMobileMenu,
     onOpenAuditLog,
 }) => {
+    const { user } = useAuth();
     const [notificationsOpen, setNotificationsOpen] = useState(false);
 
     const notifications = [
@@ -71,8 +74,8 @@ export const AdminTopHeader: React.FC<AdminTopHeaderProps> = ({
                     type="button"
                     onClick={onOpenAuditLog}
                     className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${currentTab === 'audit-log'
-                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent'
                         }`}
                 >
                     <ScrollText className="w-3.5 h-3.5" />
@@ -120,9 +123,7 @@ export const AdminTopHeader: React.FC<AdminTopHeaderProps> = ({
                     )}
                 </div>
 
-                <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                    OP
-                </div>
+                <Avatar name={user?.fullName} src={user?.avatarUrl} className="w-8 h-8 text-xs" />
             </div>
         </header>
     );

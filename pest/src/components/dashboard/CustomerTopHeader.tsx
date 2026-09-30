@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CustomerNavTab, CaseRecord, PortalPersona } from '../../types';
-import { Bell, ChevronRight, Menu } from 'lucide-react';
+import { Bell, ChevronDown, ChevronRight, ExternalLink, LogOut, Menu, Settings, User as UserIcon } from 'lucide-react';
+import { Avatar } from '../Avatar';
 import { useAuth } from '../../context/AuthContext';
 
 interface CustomerTopHeaderProps {
@@ -8,22 +9,39 @@ interface CustomerTopHeaderProps {
   activeCase: CaseRecord | null;
   onOpenMobileMenu: () => void;
   onSwitchPersona: (persona: PortalPersona) => void;
-}
-
-function initialsOf(name?: string) {
-  if (!name) return '?';
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  return ((parts[0]?.[0] ?? '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase() || '?';
+  onOpenAccount: () => void;
+  onSignOut: () => void;
 }
 
 export const CustomerTopHeader: React.FC<CustomerTopHeaderProps> = ({
   currentTab,
   activeCase,
   onOpenMobileMenu,
-  onSwitchPersona
+  onSwitchPersona,
+  onOpenAccount,
+  onSignOut
 }) => {
   const { user } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handlePointer = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [menuOpen]);
+
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
   const notifications = useMemo(
@@ -152,8 +170,78 @@ export const CustomerTopHeader: React.FC<CustomerTopHeaderProps> = ({
           </button>
         </div>
 
-        <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
-          {initialsOf(user?.fullName)}
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => {
+              setNotificationsOpen(false);
+              setMenuOpen((open) => !open);
+            }}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            aria-label="Open account menu"
+            className="flex items-center gap-1.5 rounded-full p-1 pr-2 hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            <Avatar name={user?.fullName} src={user?.avatarUrl} className="w-8 h-8 text-xs" />
+            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {menuOpen && (
+            <div
+              role="menu"
+              className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 text-xs"
+            >
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100">
+                <Avatar name={user?.fullName} src={user?.avatarUrl} className="w-10 h-10 text-sm" />
+                <div className="min-w-0">
+                  <div className="font-bold text-slate-900 truncate">{user?.fullName}</div>
+                  <div className="text-[11px] text-slate-400 truncate">{user?.email}</div>
+                </div>
+              </div>
+
+              <div className="py-1">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setMenuOpen(false); onOpenAccount(); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-slate-700 hover:bg-slate-50 text-left cursor-pointer"
+                >
+                  <UserIcon className="w-3.5 h-3.5 text-slate-400" />
+                  <span>My Account</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setMenuOpen(false); onOpenAccount(); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-slate-700 hover:bg-slate-50 text-left cursor-pointer"
+                >
+                  <Settings className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Account Settings</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setMenuOpen(false); onSwitchPersona('storefront'); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-blue-700 hover:bg-blue-50 text-left font-medium cursor-pointer"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>View Public Website</span>
+                </button>
+              </div>
+
+              <div className="border-t border-slate-100 pt-1">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setMenuOpen(false); onSignOut(); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-slate-600 hover:bg-slate-50 text-left cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

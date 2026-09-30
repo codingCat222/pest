@@ -25,6 +25,16 @@ export const AuthController = {
     res.json({ message: 'Logged out' });
   },
 
+  async updateMe(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.userId;
+      const user = await AuthService.updateProfile(userId, req.body);
+      res.json(user);
+    } catch (err: any) {
+      res.status(err.status || 500).json({ error: err.message || 'Unable to update profile' });
+    }
+  },
+
   async me(req: Request, res: Response) {
     try {
       const userId = (req as any).user.userId;

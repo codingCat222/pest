@@ -24,6 +24,15 @@ function normalizeEmail(email: unknown): string {
   return typeof email === 'string' ? email.trim().toLowerCase() : '';
 }
 
+const AVATAR_PATTERN = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+const MAX_AVATAR_LENGTH = 300000;
+
+export interface UpdateProfileDto {
+  fullName?: string;
+  phone?: string | null;
+  avatarUrl?: string | null;
+}
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function claimUnlinkedCases(userId: string, email: string) {
@@ -102,6 +111,40 @@ export const AuthService = {
     if (!user) {
       throw { status: 404, message: 'User not found' };
     }
+    return this.sanitizeUser(user);
+  },
+
+  async updateProfile(userId: string, data: UpdateProfileDto) {
+    const update: { fullName?: string; phone?: string | null; avatarUrl?: string | null } = {};
+
+    if (data.fullName !== undefined) {
+      const fullName = String(data.fullName).trim();
+      if (!fullName) throw { status: 400, message: 'Full name cannot be empty' };
+      update.fullName = fullName;
+    }
+
+    if (data.phone !== undefined) {
+      const phone = data.phone === null ? '' : String(data.phone).trim();
+      if (phone.length > 30) throw { status: 400, message: 'Phone number is too long' };
+      update.phone = phone || null;
+    }
+
+    if (data.avatarUrl !== undefined) {
+      if (!data.avatarUrl) {
+        update.avatarUrl = null;
+      } else {
+        if (data.avatarUrl.length > MAX_AVATAR_LENGTH || !AVATAR_PATTERN.test(data.avatarUrl)) {
+          throw { status: 400, message: 'Profile photo must be a JPG, PNG or WebP image under 200KB' };
+        }
+        update.avatarUrl = data.avatarUrl;
+      }
+    }
+
+    if (Object.keys(update).length === 0) {
+      throw { status: 400, message: 'Nothing to update' };
+    }
+
+    const user = await prisma.user.update({ where: { id: userId }, data: update });
     return this.sanitizeUser(user);
   },
 
