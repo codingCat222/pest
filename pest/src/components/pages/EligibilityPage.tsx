@@ -9,7 +9,7 @@ interface EligibilityPageProps {
     onOrderCompleted: (newCase: CaseRecord) => void;
 }
 
-const PEST_OPTIONS: PestType[] = ['Rats or mice', 'Bedbugs', 'Cockroaches', 'Foxes', 'Ants', 'Other', 'Not sure'];
+const PEST_OPTIONS: PestType[] = ['Rats or mice', 'Bedbugs', 'Cockroaches', 'Foxes', 'Ants', 'Not sure'];
 const LOCATION_OPTIONS: ActivityLocation[] = ['Inside my home', 'Garage', 'Loft/roof space', 'Garden/outside', 'Commercial property', 'Other'];
 const DURATION_OPTIONS = ['Less than a week', '1–4 weeks', '1–3 months', 'Longer'] as const;
 const SIGHTING_OPTIONS = ['Live rodent', 'Droppings', 'Scratching/noises', 'Gnawing', 'Damage', 'Other signs'] as const;
@@ -60,7 +60,7 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
         try {
             const created = await CasesService.create(payload);
             onOrderCompleted(created);
-            navigate('/dashboard');
+            navigate(`/checkout/${created.id}`);
         } catch (err) {
             setSubmitError(apiErrorMessage(err, 'Unable to submit your request. Please try again.'));
         } finally {

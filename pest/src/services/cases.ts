@@ -197,3 +197,4 @@ export const CasesService = {
 };
 
 export default CasesService;
+export const UNPAID_CASE_STATUSES: string[] = ['NEW', 'ELIGIBILITY_CHECK', 'PRODUCT_CLAIMED', 'AWAITING_DELIVERY_PAYMENT'];

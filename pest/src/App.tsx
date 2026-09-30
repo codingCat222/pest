@@ -49,7 +49,9 @@ import { ContactPage } from './components/pages/ContactPage';
 import { LegalPage } from './components/pages/LegalPage';
 import { X, Inbox } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { CasesService } from './services/cases';
+import { CasesService, UNPAID_CASE_STATUSES } from './services/cases';
+import { CheckoutPage } from './components/pages/CheckoutPage';
+import { OrderConfirmationPage } from './components/pages/OrderConfirmationPage';
 import { ActivityReportsService } from './services/activityReports';
 import { AppointmentsService } from './services/appointments';
 import { apiErrorMessage } from './services/format';
@@ -70,6 +72,32 @@ function EmptyDashboard() {
   );
 }
 
+const PAGE_PATHS: Record<string, string> = {
+  home: '/',
+  'how-it-works': '/how-it-works',
+  'free-products': '/free-products',
+  'rats-mice': '/pests/rats-mice',
+  bedbugs: '/pests/bedbugs',
+  cockroaches: '/pests/cockroaches',
+  foxes: '/pests/foxes',
+  ants: '/pests/ants',
+  other: '/pests/other',
+  'professional-treatment': '/professional-treatment',
+  proofing: '/proofing',
+  faqs: '/faqs',
+  'about-us': '/about',
+  contact: '/contact',
+  terms: '/terms',
+  privacy: '/privacy',
+  cookies: '/cookies',
+  dashboard: '/dashboard',
+  admin: '/admin',
+  login: '/login',
+  signup: '/signup',
+};
+
+const pagePath = (page: string) => PAGE_PATHS[page] ?? `/${page}`;
+
 // ---------- Public site layout (navbar + footer wrap every public page) ----------
 function PublicLayout({
   cases,
@@ -78,6 +106,7 @@ function PublicLayout({
   activeCase,
   onBookingConfirmed,
   onLoginSuccess,
+  onPaymentSettled,
 }: {
   cases: CaseRecord[];
   setCases: (c: CaseRecord[]) => void;
@@ -85,6 +114,7 @@ function PublicLayout({
   activeCase: CaseRecord | null;
   onBookingConfirmed: (date: string, time: string, isoDate: string) => Promise<void>;
   onLoginSuccess: (role: 'customer' | 'admin') => void;
+  onPaymentSettled: () => Promise<void>;
 }) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -104,7 +134,7 @@ function PublicLayout({
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-brand-green selection:text-white">
       <Navbar
-        onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
+        onNavigate={(page) => navigate(pagePath(page))}
         onOpenEligibility={() => goToEligibility()}
         onOpenLogin={() => navigate('/login')}
         onOpenSignup={() => navigate('/signup')}
@@ -124,20 +154,29 @@ function PublicLayout({
           />
           <Route path="/how-it-works" element={<HowItWorksPage onStartEligibility={() => goToEligibility()} onBookProfessional={goToBooking} />} />
           <Route path="/free-products" element={<FreeProductsPage onStartEligibility={() => goToEligibility()} />} />
-          <Route path="/pests/rats-mice" element={<PestHubPage pestKey="rats-mice" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Rats or mice')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/pests/bedbugs" element={<PestHubPage pestKey="bedbugs" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Bedbugs')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/pests/cockroaches" element={<PestHubPage pestKey="cockroaches" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Cockroaches')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/pests/foxes" element={<PestHubPage pestKey="foxes" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Foxes')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/pests/ants" element={<PestHubPage pestKey="ants" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Ants')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/pests/rats-mice" element={<PestHubPage pestKey="rats-mice" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Rats or mice')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/pests/bedbugs" element={<PestHubPage pestKey="bedbugs" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Bedbugs')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/pests/cockroaches" element={<PestHubPage pestKey="cockroaches" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Cockroaches')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/pests/foxes" element={<PestHubPage pestKey="foxes" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Foxes')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/pests/ants" element={<PestHubPage pestKey="ants" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Ants')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/pests/other" element={<PestHubPage pestKey="other" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Other')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pagePath(page))} />} />
           <Route path="/professional-treatment" element={<ProfessionalTreatmentPage onBookProfessional={goToBooking} />} />
           <Route path="/proofing" element={<ProofingPage onStartEligibility={() => goToEligibility()} onBookProfessional={goToBooking} />} />
           <Route path="/faqs" element={<FaqsPage onStartEligibility={() => goToEligibility()} />} />
           <Route path="/about" element={<AboutUsPage onStartEligibility={() => goToEligibility()} />} />
-          <Route path="/contact" element={<ContactPage onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/terms" element={<LegalPage initialSection="terms" onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/privacy" element={<LegalPage initialSection="privacy" onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/cookies" element={<LegalPage initialSection="cookies" onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/contact" element={<ContactPage onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/terms" element={<LegalPage initialSection="terms" onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/privacy" element={<LegalPage initialSection="privacy" onNavigate={(page) => navigate(pagePath(page))} />} />
+          <Route path="/cookies" element={<LegalPage initialSection="cookies" onNavigate={(page) => navigate(pagePath(page))} />} />
           <Route path="/check-eligibility" element={<EligibilityPage onOrderCompleted={handleOrderCompleted} />} />
+          <Route
+            path="/checkout/:caseId"
+            element={user ? <CheckoutPage onPaymentSettled={onPaymentSettled} /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/order-confirmation/:caseId"
+            element={user ? <OrderConfirmationPage onPaymentSettled={onPaymentSettled} /> : <Navigate to="/login" replace />}
+          />
           <Route
             path="/book-professional"
             element={
@@ -161,7 +200,7 @@ function PublicLayout({
                   onLoginSuccess(role);
                   navigate(role === 'admin' ? '/admin' : '/dashboard');
                 }}
-                onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
+                onNavigate={(page) => navigate(pagePath(page))}
               />
             }
           />
@@ -173,7 +212,7 @@ function PublicLayout({
                   onLoginSuccess('customer');
                   navigate('/dashboard');
                 }}
-                onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
+                onNavigate={(page) => navigate(pagePath(page))}
               />
             }
           />
@@ -181,13 +220,13 @@ function PublicLayout({
       </main>
 
       <Footer
-        onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
+        onNavigate={(page) => navigate(pagePath(page))}
         onOpenEligibility={() => goToEligibility()}
         onOpenBooking={goToBooking}
         onOpenLogin={() => navigate('/login')}
       />
 
-      <CookieBanner onNavigate={(type) => navigate(`/${type}`)} />
+      <CookieBanner onNavigate={(type) => navigate(pagePath(type))} />
     </div>
   );
 }
@@ -251,6 +290,21 @@ function DashboardLayout({
         />
 
         <main className="flex-1 max-w-[1360px] w-full mx-auto p-4 sm:p-6 lg:p-8">
+          {casesStatus === 'ready' && activeCase && UNPAID_CASE_STATUSES.includes(activeCase.status) && (
+            <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-bold text-amber-900">Your free product is reserved</div>
+                <div className="text-xs text-amber-800 mt-0.5">Pay the delivery charge to claim it and start your monitoring period.</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate(`/checkout/${activeCase.id}`)}
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer shrink-0"
+              >
+                Pay delivery
+              </button>
+            </div>
+          )}
           {casesStatus === 'error' ? (
             <p className="py-24 text-center text-sm font-semibold text-red-600">{casesError}</p>
           ) : casesStatus !== 'ready' ? (
@@ -438,6 +492,7 @@ function AdminLayout({
 
 // ---------- Root app ----------
 function AppRoutes() {
+  const navigate = useNavigate();
   const [cases, setCases] = useState<CaseRecord[]>([]);
   const [activeCase, setActiveCase] = useState<CaseRecord | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -467,21 +522,24 @@ function AppRoutes() {
 
     const load = async () => {
       let fetched = await CasesService.list();
+      let createdId: string | null = null;
       const pending = sessionStorage.getItem('pendingCase');
       if (pending) {
         sessionStorage.removeItem('pendingCase');
         const created = await CasesService.create(JSON.parse(pending));
         fetched = [created, ...fetched];
+        createdId = created.id;
       }
-      return fetched;
+      return { fetched, createdId };
     };
 
     load()
-      .then((fetched) => {
+      .then(({ fetched, createdId }) => {
         if (cancelled) return;
         setCases(fetched);
         setActiveCase((prev) => fetched.find((c) => c.id === prev?.id) ?? fetched[0] ?? null);
         setCasesStatus('ready');
+        if (createdId) navigate(`/checkout/${createdId}`);
       })
       .catch((err: any) => {
         if (cancelled) return;
@@ -589,6 +647,7 @@ function AppRoutes() {
               setActiveCase={setActiveCase}
               activeCase={activeCase}
               onBookingConfirmed={handleBookingConfirmed}
+              onPaymentSettled={reloadCases}
               onLoginSuccess={() => { /* navigation handled by LoginPage after real auth */ }}
             />
           }

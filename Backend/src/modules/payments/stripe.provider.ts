@@ -1,6 +1,3 @@
-// Thin wrapper around Stripe so the rest of the app never imports the SDK directly.
-// Requires the `stripe` package (`npm install stripe`) and STRIPE_SECRET_KEY in .env.
-// If not configured, methods throw a clear error instead of crashing at import time.
 
 let stripeClient: any = null;
 
@@ -13,7 +10,6 @@ function getClient() {
   }
 
   try {
-    // Lazy require so the app can boot even if `stripe` isn't installed yet.
     const Stripe = require('stripe');
     stripeClient = new Stripe(secretKey);
     return stripeClient;
@@ -26,9 +22,10 @@ export const StripeProvider = {
   async createPaymentIntent(amount: number, currency: string = 'gbp', metadata?: Record<string, string>) {
     const stripe = getClient();
     return stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Stripe expects the smallest currency unit
+      amount: Math.round(amount * 100),
       currency,
       metadata,
+      automatic_payment_methods: { enabled: true },
     });
   },
 
