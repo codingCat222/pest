@@ -1,9 +1,9 @@
 import React from 'react';
 
 const PRODUCTS = [
-    { name: 'Ultrasonic repellent', image: '/Images/ultrasonic-repellent.svg' },
-    { name: 'Bait box', image: '/Images/bait-box.svg' },
-    { name: 'Traps', image: '/Images/traps.svg' },
+    { name: 'Ultrasonic repellent', image: '/Images/product.png' },
+    { name: 'Bait box', image: '/Images/product2.png' },
+    { name: 'Traps', image: '/Images/product3.png' },
 ];
 
 export const ProductShowcase: React.FC = () => {
