@@ -119,12 +119,29 @@ export const Hero: React.FC<HeroProps> = ({
               Start Free.
             </h1>
 
-            <p className="mt-4 text-white/85 text-sm sm:text-base max-w-lg leading-relaxed">
+            <p className="mt-3 text-white text-base sm:text-lg font-semibold max-w-lg leading-snug">
+              Get professional-grade pest-control products FREE — just pay delivery.
+            </p>
+
+            <p className="mt-3 text-white/85 text-sm sm:text-base max-w-lg leading-relaxed">
               We believe not all pest problems require a call out. So why not get
               the products and guideline to try it yourself first for free. If you
               then need a hand, our experts can step in for a flat £95.99 –
               with additional services available when required.
             </p>
+
+            <div className="mt-5">
+              <button
+                type="button"
+                onClick={() => onStartEligibility(selectedPest, selectedLocation)}
+                className="bg-brand-green hover:bg-brand-green-dark text-white font-bold text-sm sm:text-base px-6 py-3.5 rounded-full shadow-lg transition-all active:scale-95 cursor-pointer"
+              >
+                GET MY FREE PEST CONTROL KIT
+              </button>
+              <p className="mt-2 text-[11px] font-bold tracking-widest text-white/70 uppercase">
+                Free product · Pay delivery only
+              </p>
+            </div>
 
             {/* Toggle */}
             <div className="mt-5 flex items-center gap-2">
