@@ -53,7 +53,7 @@ export const Hero: React.FC<HeroProps> = ({
           </button>
         </div>
 
-        {/* Hero panel */}
+        {/* ========== OLD HERO PANEL (purple bg + split layout) — commented out ==========
         <div className="rounded-3xl md:rounded-[36px] relative overflow-hidden shadow-2xl bg-brand-purple grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] items-stretch min-h-[520px]">
           <div className="relative z-10 max-w-2xl p-7 sm:p-12 lg:p-14 lg:pr-6 flex flex-col justify-center">
 
@@ -61,23 +61,77 @@ export const Hero: React.FC<HeroProps> = ({
               Pest Problem?
               <br />
               Start Free.
-              <br />
-              {/* product */}
             </h1>
 
             <p className="mt-5 text-white/85 text-base sm:text-lg max-w-xl leading-relaxed">
-              We believe not all pest problems require a call out. So why not give
-              you the products and guideline to try it yourself first for free. If you
-              need then need a hand, our experts can step in for a flat £95.99 –
+              We believe not all pest problems require a call out. So why not get
+              the products and guideline to try it yourself first for free. If you
+              then need a hand, our experts can step in for a flat £95.99 –
+              with additional services available when required.
+            </p>
+
+            <div className="mt-7 flex items-center gap-2">
+              <button type="button" onClick={() => setActiveToggle('free')} className={`px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer border ${activeToggle === 'free' ? 'bg-white text-brand-purple border-white shadow-md' : 'bg-transparent text-white border-white/40 hover:bg-white/10'}`}>Free product</button>
+              <button type="button" onClick={() => { setActiveToggle('visit'); onBookProfessional(); }} className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all cursor-pointer border ${activeToggle === 'visit' ? 'bg-white text-brand-purple border-white shadow-md' : 'bg-transparent text-white border-white/40 hover:bg-white/10'}`}>Book <span className="text-brand-green-light font-semibold">£95.99</span> visit</button>
+            </div>
+
+            <div className="mt-4 bg-white text-brand-purple rounded-2xl md:rounded-full p-2 sm:p-2.5 shadow-2xl max-w-2xl flex flex-col md:flex-row items-stretch md:items-center gap-2">
+              ...eligibility bar...
+            </div>
+
+            <p className="mt-4 text-xs text-white/70 leading-normal max-w-xl">
+              Eligibility, product availability and delivery charges apply.
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              ...quick pest pills...
+            </div>
+          </div>
+
+          <div className="hidden lg:block relative">
+            <img src={HERO_IMAGE} alt="Pest control products" className="absolute inset-0 w-full h-full object-cover object-center" />
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-purple via-brand-purple/40 to-transparent" />
+          </div>
+          <div className="lg:hidden w-full h-56 sm:h-72 relative">
+            <img src={HERO_IMAGE} alt="Pest control products" className="w-full h-full object-cover object-center" />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-purple/60 to-transparent" />
+          </div>
+        </div>
+        ========== END OLD HERO PANEL ========== */}
+
+        {/* ========== NEW HERO PANEL — full background image with overlay ========== */}
+        <div className="rounded-3xl md:rounded-[36px] relative overflow-hidden shadow-2xl min-h-[480px]">
+          {/* Background image */}
+          <img
+            src={HERO_IMAGE}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+          {/* Dark overlay for readability */}
+          <div className="absolute inset-0 bg-black/60" />
+
+          {/* Content on top */}
+          <div className="relative z-10 max-w-2xl p-7 sm:p-10 lg:p-12 flex flex-col justify-center min-h-[480px]">
+
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-[1.15]">
+              Pest Problem?
+              <br />
+              Start Free.
+            </h1>
+
+            <p className="mt-4 text-white/85 text-sm sm:text-base max-w-lg leading-relaxed">
+              We believe not all pest problems require a call out. So why not get
+              the products and guideline to try it yourself first for free. If you
+              then need a hand, our experts can step in for a flat £95.99 –
               with additional services available when required.
             </p>
 
             {/* Toggle */}
-            <div className="mt-7 flex items-center gap-2">
+            <div className="mt-5 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setActiveToggle('free')}
-                className={`px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer border ${activeToggle === 'free'
+                className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer border ${activeToggle === 'free'
                   ? 'bg-white text-brand-purple border-white shadow-md'
                   : 'bg-transparent text-white border-white/40 hover:bg-white/10'
                   }`}
@@ -91,7 +145,7 @@ export const Hero: React.FC<HeroProps> = ({
                   setActiveToggle('visit');
                   onBookProfessional();
                 }}
-                className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all cursor-pointer border ${activeToggle === 'visit'
+                className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all cursor-pointer border ${activeToggle === 'visit'
                   ? 'bg-white text-brand-purple border-white shadow-md'
                   : 'bg-transparent text-white border-white/40 hover:bg-white/10'
                   }`}
@@ -101,16 +155,16 @@ export const Hero: React.FC<HeroProps> = ({
             </div>
 
             {/* Eligibility bar */}
-            <div className="mt-4 bg-white text-brand-purple rounded-2xl md:rounded-full p-2 sm:p-2.5 shadow-2xl max-w-2xl flex flex-col md:flex-row items-stretch md:items-center gap-2">
+            <div className="mt-3 bg-white text-brand-purple rounded-2xl md:rounded-full p-2 sm:p-2.5 shadow-2xl max-w-xl flex flex-col md:flex-row items-stretch md:items-center gap-2">
 
-              <div className="flex-1 px-4 py-1.5">
+              <div className="flex-1 px-3 py-1">
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-brand-green mb-0.5">
                   PEST
                 </label>
                 <select
                   value={selectedPest}
                   onChange={(e) => setSelectedPest(e.target.value as PestType)}
-                  className="w-full bg-transparent text-sm sm:text-base font-semibold text-brand-purple appearance-none focus:outline-none cursor-pointer"
+                  className="w-full bg-transparent text-sm font-semibold text-brand-purple appearance-none focus:outline-none cursor-pointer"
                 >
                   <option value="Rats or mice">Rats or mice</option>
                   <option value="Bedbugs">Bedbugs</option>
@@ -123,14 +177,14 @@ export const Hero: React.FC<HeroProps> = ({
 
               <div className="hidden md:block w-px h-8 bg-brand-purple/15" />
 
-              <div className="flex-1 px-4 py-1.5">
+              <div className="flex-1 px-3 py-1">
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-brand-green mb-0.5">
                   WHERE
                 </label>
                 <select
                   value={selectedLocation}
                   onChange={(e) => setSelectedLocation(e.target.value as ActivityLocation)}
-                  className="w-full bg-transparent text-sm sm:text-base font-semibold text-brand-purple appearance-none focus:outline-none cursor-pointer"
+                  className="w-full bg-transparent text-sm font-semibold text-brand-purple appearance-none focus:outline-none cursor-pointer"
                 >
                   <option value="Inside my home">Inside my home</option>
                   <option value="Garage">Garage</option>
@@ -144,25 +198,25 @@ export const Hero: React.FC<HeroProps> = ({
               <button
                 type="button"
                 onClick={handleAction}
-                className="bg-brand-green hover:bg-brand-green-dark text-white font-semibold text-sm px-6 py-3.5 rounded-xl md:rounded-full inline-flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                className="bg-brand-green hover:bg-brand-green-dark text-white font-semibold text-xs sm:text-sm px-5 py-3 rounded-xl md:rounded-full inline-flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 whitespace-nowrap cursor-pointer"
               >
-                <Search className="w-4 h-4" />
+                <Search className="w-3.5 h-3.5" />
                 <span>Check Eligibility</span>
               </button>
             </div>
 
-            <p className="mt-4 text-xs text-white/70 leading-normal max-w-xl">
+            <p className="mt-3 text-[11px] text-white/60 leading-normal max-w-lg">
               Eligibility, product availability and delivery charges apply. Products must be used strictly in accordance with their instructions.
             </p>
 
             {/* Quick pest pills */}
-            <div className="mt-6 flex flex-wrap items-center gap-2">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               {(['Rats or mice', 'Bedbugs', 'Cockroaches', 'Foxes'] as PestType[]).map((pest) => (
                 <button
                   key={pest}
                   type="button"
                   onClick={() => handlePestQuickClick(pest)}
-                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/30 text-xs sm:text-sm font-medium text-white transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/30 text-xs font-medium text-white transition-colors cursor-pointer"
                 >
                   <span>{pest === 'Rats or mice' ? 'Rats & Mice' : pest} →</span>
                 </button>
@@ -170,27 +224,8 @@ export const Hero: React.FC<HeroProps> = ({
             </div>
 
           </div>
-
-          {/* Right-side hero image — bleeds to panel edges */}
-          <div className="hidden lg:block relative">
-            <img
-              src={HERO_IMAGE}
-              alt="Pest control products"
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
-            {/* Gradient overlay so text on the left stays readable */}
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-purple via-brand-purple/40 to-transparent" />
-          </div>
-          {/* Mobile: show image below content */}
-          <div className="lg:hidden w-full h-56 sm:h-72 relative">
-            <img
-              src={HERO_IMAGE}
-              alt="Pest control products"
-              className="w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-purple/60 to-transparent" />
-          </div>
         </div>
+        {/* ========== END NEW HERO PANEL ========== */}
 
         {/* Trust stats */}
         <div className="mt-14">

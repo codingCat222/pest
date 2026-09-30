@@ -89,82 +89,113 @@ export const FAQ_DATA = [
 export const PEST_DETAILS: Record<string, {
   name: string;
   headline: string;
+  subheading?: string;
   signs: string[];
   description: string;
   nextSteps: string;
   kitName: string;
+  image: string;
 }> = {
   'rats-mice': {
     name: 'Rats & Mice',
     headline: 'Seeing Rats or Mice?',
+    subheading: "You're not alone.",
+    image: '/Images/rodents-hero.jpg',
     signs: [
-      'Dark spindle-shaped droppings along walls or behind appliances',
-      'Scratching, scuttling or chewing sounds inside lofts or cavity walls',
-      'Gnawing marks on wood, wiring, baseboards or plastic food packaging',
-      'Shredded paper, insulation or fabric nesting materials',
-      'Dark greasy smear marks along baseboards and regular floor runs',
-      'Direct sightings during twilight or nocturnal hours'
+      'Droppings',
+      'Scratching or movement sounds',
+      'Gnawing',
+      'Damage to food packaging',
+      'Nesting material',
+      'Grease marks',
+      'Sightings'
     ],
-    description: 'You are not alone. Rodents enter homes seeking warmth and food. You do not always need a costly contractor on day one. Start with our free targeted kit, monitor for 7 days, and escalate to our £95.99 visit only if needed.',
-    nextSteps: 'Answer 4 simple questions about your home. Claim your free kit, monitor for 7 days, and fix the root entry points.',
+    description: "You're not alone. Rodents enter homes and properties seeking warmth and food sources. You don't always need an expensive exterminator on day one. Start with our free targeted kit, monitor for 7 days, and move to our £95.99 professional service only if activity continues.",
+    nextSteps: "We'll ask you a few questions about what you've seen. If you're eligible, you'll be able to claim an available product and pay the delivery cost. You'll then monitor the situation. If activity continues, you can move to our professional service.",
     kitName: 'Targeted Rodent Activity Kit'
   },
   'bedbugs': {
     name: 'Bedbugs',
     headline: 'Dealing with Bedbugs?',
+    subheading: "You're not alone.",
+    image: '/Images/bedbugs-hero.jpg',
     signs: [
-      'Small, itchy red bites often appearing in clusters or straight lines',
-      'Tiny blood spots on bedsheets, pillowcases, or mattress seams',
-      'Dark rusty spots of bedbug excrement on sheets, bed frames or walls',
-      'Discarded pale insect skins or tiny translucent egg shells',
-      'Unpleasant sweet, musty odor in severe infestations',
-      'Live flat, oval insects (around 4-5mm) in mattress seams'
+      'Small, itchy red bites appearing in clusters or lines',
+      'Blood spots or rust-coloured marks on sheets and mattresses',
+      'Shed insect skins or tiny pale eggshells around bed joints',
+      'Sweet, musty unpleasant odour in sleeping areas',
+      'Live flat, reddish-brown oval insects (4-5mm) in seams',
+      'Bites occurring overnight on exposed arms, legs, or neck'
     ],
-    description: 'Bedbugs multiply quickly and hide in the smallest mattress crevices. Our detection and interception matrix allows you to immediately identify active zones and isolate your bed.',
-    nextSteps: 'Claim your free detection kit. If bedbug activity persists after 7 days, our £95.99 professional service provides industrial heat steaming and deep eradication.',
+    description: "You're not alone. Bedbug infestations can spread rapidly across furniture and fabrics. Our targeted interception kit isolates active zones immediately, helping you monitor before escalating to heat treatment.",
+    nextSteps: "We'll ask you a few questions about what you've seen. If you're eligible, you'll be able to claim an available product and pay the delivery cost. You'll then monitor the situation. If activity continues, you can move to our professional service.",
     kitName: 'Bedbug Detection & Trapping Matrix'
   },
   'cockroaches': {
     name: 'Cockroaches',
     headline: 'Cockroaches in Your Property?',
+    subheading: "You're not alone.",
+    image: '/Images/cockroaches-hero.jpg',
     signs: [
-      'Cylindrical droppings resembling ground black pepper',
-      'Foul, lingering oily or musty smell under appliances',
-      'Brown oval egg cases (oothecae) behind kitchen appliances',
-      'Irregular chew marks on paper, packaging or book bindings',
-      'Shed skins in dark, humid cupboards or boiler cupboards',
-      'Nocturnal sightings when switching on kitchen lights'
+      'Droppings resembling ground black pepper or coffee grounds',
+      'Foul, lingering oily or damp smell under sinks and appliances',
+      'Brown oval egg cases (oothecae) hidden in warm crevices',
+      'Shed skins and damage to food packaging or wallpaper glue',
+      'Sightings of insects scuttling when lights are turned on at night',
+      'High activity near heat sources like refrigerators and boilers'
     ],
-    description: 'Cockroaches thrive in warmth and moisture. Our specialized insect attractant paste draws cockroaches out from inaccessible voids and starts reducing colonies fast.',
-    nextSteps: 'Get our free attractant kit. Log daily findings in your dashboard. If activity is persistent, book our £95.99 technician service.',
+    description: "You're not alone. Cockroaches seek damp, warm spaces near food sources. Our professional-grade attractant system draws them out of harbourages so you can quantify and curb the infestation quickly.",
+    nextSteps: "We'll ask you a few questions about what you've seen. If you're eligible, you'll be able to claim an available product and pay the delivery cost. You'll then monitor the situation. If activity continues, you can move to our professional service.",
     kitName: 'Cockroach Attractant & Gel System'
   },
   'foxes': {
     name: 'Foxes',
     headline: 'Fox Activity Around Your Property?',
+    subheading: "You're not alone.",
+    image: '/Images/foxes-hero.jpg',
     signs: [
-      'Excavation holes and burrowing under sheds, decking or lawns',
-      'Pungent, musky territorial scent marking along garden paths',
-      'Overturned domestic wheelie bins or scattered rubbish bags',
-      'Loud screaming, barking or howling at night',
-      'Droppings containing fur, berries or bone fragments in prominent spots',
-      'Regular daytime or evening sightings across your garden'
+      'Excavation holes and burrowing under decking, sheds, or outbuildings',
+      'Pungent, musky territorial scent marking along perimeter paths',
+      'Overturned domestic wheelie bins or torn waste bags',
+      'Loud screaming, barking, or howling calls after dark',
+      'Droppings containing bone fragments, fur, or berries in visible areas',
+      'Frequent sightings across garden lawns during daytime or dusk'
     ],
-    description: 'Urban foxes can damage garden structures and create disturbance. Our bio-scent boundary solution disrupts their territorial pathways safely and humanely.',
-    nextSteps: 'Claim the free deterrent kit and monitor for 7 days. If a fox den has been established under decking, book our £95.99 professional assessment.',
+    description: "You're not alone. Urban foxes frequently establish dens near human settlements. Our humane perimeter bio-deterrent interrupts their territorial markings without causing harm to wildlife or domestic pets.",
+    nextSteps: "We'll ask you a few questions about what you've seen. If you're eligible, you'll be able to claim an available product and pay the delivery cost. You'll then monitor the situation. If activity continues, you can move to our professional service.",
     kitName: 'Fox Perimeter Deterrent Compound'
   },
   'ants': {
     name: 'Ants',
     headline: 'Ant Trails & Infestations?',
+    subheading: "You're not alone.",
+    image: '/Images/ants-hero.jpg',
     signs: [
-      'Visible ant trails entering through door sills or window frames',
-      'Small mounds of soil or sand particles emerging from floor tiles',
-      'Concentrations of worker ants inside kitchens, pantries, or pet bowls',
-      'Occasional swarms of flying ants in warm summer conditions'
+      'Continuous worker ant trails along skirting boards and door frames',
+      'Fine sand or soil mounds emerging from tiles, pavers, or brickwork',
+      'Heavy clusters around sweet foods, pet bowls, or kitchen pantries',
+      'Nesting activity under flooring, patio slabs, or insulation',
+      'Winged flying ant swarms emerging during warm humid spells'
     ],
-    description: 'Surface sprays often kill only workers while the queen continues laying. Our bait stations allow workers to carry food back to the central nest.',
-    nextSteps: 'Claim the free ant control kit. Check results across 7 days. Escalate to £95.99 professional treatment for deep subfloor nest elimination.',
+    description: "You're not alone. Surface insecticides only target foragers while the queen remains safe underground. Our dual-action bait stations allow worker ants to carry active treatment directly back to eradicate the nest core.",
+    nextSteps: "We'll ask you a few questions about what you've seen. If you're eligible, you'll be able to claim an available product and pay the delivery cost. You'll then monitor the situation. If activity continues, you can move to our professional service.",
     kitName: 'Targeted Ant Nest Elimination Kit'
+  },
+  'other': {
+    name: 'Other Pests',
+    headline: 'Dealing with Other Pests?',
+    subheading: "You're not alone.",
+    image: '/Images/technician.jpeg',
+    signs: [
+      'Unexplained buzzing, fluttering, or scratching sounds in roof spaces',
+      'Wasp, hornet, or bee nests under roof tiles or garden structures',
+      'Moth larvae feeding on natural fibres, carpets, or stored woollens',
+      'Flea bites on ankles or pets scratching persistently',
+      'Silverfish or beetle sightings in bathrooms, kitchens, or basements',
+      'Damage to electrical cabling, pipe insulation, or timber beams'
+    ],
+    description: "You're not alone. From flying insects and textiles pests to garden wildlife, diagnosing the exact pest is key to effective control. Our diagnostic questionnaire guides you to the correct targeted product or rapid expert inspection.",
+    nextSteps: "We'll ask you a few questions about what you've seen. If you're eligible, you'll be able to claim an available product and pay the delivery cost. You'll then monitor the situation. If activity continues, you can move to our professional service.",
+    kitName: 'Specialist Pest Assessment & Control Kit'
   }
 };

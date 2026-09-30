@@ -59,6 +59,8 @@ export const Footer: React.FC<FooterProps> = ({
               <li><button type="button" onClick={() => onNavigate('bedbugs')} className={linkClass}>Bedbugs</button></li>
               <li><button type="button" onClick={() => onNavigate('cockroaches')} className={linkClass}>Cockroaches</button></li>
               <li><button type="button" onClick={() => onNavigate('foxes')} className={linkClass}>Foxes</button></li>
+              <li><button type="button" onClick={() => onNavigate('ants')} className={linkClass}>Ants</button></li>
+              <li><button type="button" onClick={() => onNavigate('other')} className={linkClass}>Other Pests</button></li>
               <li><button type="button" onClick={() => onNavigate('professional-treatment')} className={linkClass}>Professional Treatment</button></li>
               <li><button type="button" onClick={() => onNavigate('proofing')} className={linkClass}>Proofing</button></li>
             </ul>

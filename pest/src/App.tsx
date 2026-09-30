@@ -20,6 +20,7 @@ import { HelpSupportView } from './components/dashboard/HelpSupportView';
 import { MobileBottomNav } from './components/dashboard/MobileBottomNav';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
+import { ProductShowcase } from './components/ProductShowcase';
 import { HomeSections } from './components/HomeSections';
 import { Footer } from './components/Footer';
 import { EligibilityPage } from './components/pages/EligibilityPage';
@@ -116,6 +117,7 @@ function PublicLayout({
             element={
               <>
                 <Hero onStartEligibility={goToEligibility} onBookProfessional={goToBooking} />
+                <ProductShowcase />
                 <HomeSections onStartEligibility={goToEligibility} onBookProfessional={goToBooking} />
               </>
             }

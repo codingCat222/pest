@@ -19,10 +19,11 @@ const SERVICE_LINKS: { page: NavigationPage; label: string }[] = [
   { page: 'bedbugs', label: 'Bedbugs' },
   { page: 'cockroaches', label: 'Cockroaches' },
   { page: 'foxes', label: 'Foxes' },
-  { page: 'ants', label: 'Ants & Other' },
+  { page: 'ants', label: 'Ants' },
+  { page: 'other', label: 'Other Pests' },
 ];
 
-const SEARCH_PESTS = ['Rats or mice', 'Bedbugs', 'Cockroaches', 'Foxes', 'Ants'];
+const SEARCH_PESTS = ['Rats or mice', 'Bedbugs', 'Cockroaches', 'Foxes', 'Ants', 'Other'];
 
 const SERVICE_PAGES: NavigationPage[] = SERVICE_LINKS.map((l) => l.page);
 

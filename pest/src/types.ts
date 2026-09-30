@@ -30,6 +30,7 @@ export type NavigationPage =
   | 'cockroaches'
   | 'foxes'
   | 'ants'
+  | 'other'
   | 'professional-treatment'
   | 'proofing'
   | 'faqs'
