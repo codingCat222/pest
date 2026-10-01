@@ -91,7 +91,7 @@ export const ProfessionalTreatmentPage: React.FC<ProfessionalTreatmentPageProps>
             <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-start gap-3">
               <Wrench className="w-5 h-5 text-slate-700 shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-bold text-slate-900 text-sm">Golf size proofing materials</h4>
+                <h4 className="font-bold text-slate-900 text-sm">Golf-ball-size hole proofing materials</h4>
                 <p className="text-xs text-slate-500 mt-1">Initial gap closure and immediate blocking of detected access holes.</p>
               </div>
             </div>

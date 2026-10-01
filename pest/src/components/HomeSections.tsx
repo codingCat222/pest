@@ -313,7 +313,7 @@ export const HomeSections: React.FC<HomeSectionsProps> = ({
                   </div>
                   <div className="flex items-center gap-2">
                     <Wrench className="w-4 h-4 text-brand-green shrink-0" />
-                    <span>Golf size proofing materials</span>
+                    <span>Golf-ball-size hole proofing materials (rodents)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0" />

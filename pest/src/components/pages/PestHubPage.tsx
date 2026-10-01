@@ -1,5 +1,5 @@
 import React from 'react';
-import { PEST_DETAILS } from '../../data/mockData';
+import { PEST_DETAILS, PACK_ITEMS, PACK_LABELS, PRO_SERVICE_INCLUDES } from '../../data/mockData';
 import { NavigationPage, PestType } from '../../types';
 import { ArrowRight, CheckCircle2, AlertTriangle, ShieldCheck, HelpCircle, Sparkles, ChevronRight } from 'lucide-react';
 
@@ -26,6 +26,19 @@ export const PestHubPage: React.FC<PestHubPageProps> = ({
   onNavigate
 }) => {
   const details = PEST_DETAILS[pestKey] || PEST_DETAILS['rats-mice'];
+  const proInclude = PRO_SERVICE_INCLUDES[pestKey];
+  const packLabel = PACK_LABELS[pestKey] || 'pest-control';
+  // ✅ NEW: pick pest-specific pack items with a safe fallback
+  const packItems = PACK_ITEMS[pestKey] || PACK_ITEMS['rats-mice'];
+
+  const PEST_WORDS: Record<string, [string, string]> = {
+    'rats-mice': ['Rats', 'rats'],
+    'bedbugs': ['Bedbugs', 'bedbugs'],
+    'cockroaches': ['Cockroaches', 'cockroaches'],
+    'foxes': ['Foxes', 'foxes'],
+    'ants': ['Ants', 'ants']
+  };
+  const [pestWord, pestLower] = PEST_WORDS[pestKey] || [details.name, details.name.toLowerCase()];
 
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
@@ -43,11 +56,10 @@ export const PestHubPage: React.FC<PestHubPageProps> = ({
                   key={tab.key}
                   type="button"
                   onClick={() => onNavigate(tab.key)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-brand-purple text-white shadow-md scale-102'
-                      : 'bg-slate-100 text-slate-700 hover:bg-brand-purple/10 hover:text-brand-purple'
-                  }`}
+                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${isActive
+                    ? 'bg-brand-purple text-white shadow-md scale-102'
+                    : 'bg-slate-100 text-slate-700 hover:bg-brand-purple/10 hover:text-brand-purple'
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -86,15 +98,15 @@ export const PestHubPage: React.FC<PestHubPageProps> = ({
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-white">
-                {details.headline}
+                We Want to Help You Deal With {pestWord}
               </h1>
 
               <div className="space-y-3">
-                <p className="text-xl sm:text-2xl font-bold text-brand-green-light">
-                  {details.subheading || "You're not alone."}
+                <p className="text-sm sm:text-base text-white/85 leading-relaxed font-normal">
+                  Seeing {pestLower} around your home or property can be worrying. We want to make the first step simple.
                 </p>
                 <p className="text-sm sm:text-base text-white/85 leading-relaxed font-normal">
-                  {details.description}
+                  If you're eligible, we'll provide a free {packLabel} pack and you only pay the applicable delivery charge. Try the first step, follow the instructions and monitor what happens.
                 </p>
               </div>
 
@@ -179,76 +191,49 @@ export const PestHubPage: React.FC<PestHubPageProps> = ({
           </div>
         </section>
 
+        {/* What's in Your Free Pack? Section */}
+        <section className="bg-white rounded-3xl p-6 sm:p-10 border border-brand-purple/10 shadow-sm space-y-5">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">What's in Your Free Pack?</h2>
+          <p className="text-sm text-slate-600">
+            Your free pack may contain selected {packLabel} products
+          </p>
+          <ul className="space-y-2.5">
+            {/* ✅ NEW: uses pest-specific packItems array */}
+            {packItems.map((item) => (
+              <li key={item} className="flex items-start gap-3 text-sm font-medium text-slate-800">
+                <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0 mt-0.5" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-slate-500">
+            Every product must be used strictly in accordance with its label and supplied instructions.
+          </p>
+        </section>
+
         {/* What Happens Next? Section */}
         <section className="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 shadow-xl space-y-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-80 h-80 bg-brand-purple/30 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="space-y-3 relative z-10">
-            <div className="text-xs font-bold uppercase tracking-widest text-brand-green-light">
-              Clear Step-by-Step Resolution
-            </div>
-            <h3 className="text-2xl sm:text-4xl font-black tracking-tight">
-              What Happens Next?
-            </h3>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
-              {details.nextSteps}
-            </p>
-          </div>
-
+          <h3 className="relative z-10 text-2xl sm:text-4xl font-black tracking-tight">What Happens Next?</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10 text-xs sm:text-sm">
-            <div className="p-5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2">
-              <div className="w-7 h-7 rounded-full bg-brand-green text-white font-black flex items-center justify-center text-xs">
-                1
+            {[
+              { n: 1, t: 'Check your eligibility', d: `Tell us a little about the ${pestLower} activity you're seeing.` },
+              { n: 2, t: 'Receive your free pack', d: `If eligible, we'll send your available ${packLabel} product. You simply pay the delivery charge.` },
+              { n: 3, t: 'Use and monitor', d: 'Follow the product instructions carefully and monitor the situation.' },
+              { n: 4, t: `Still seeing ${pestLower}?`, d: `If you're still seeing signs of activity after following the initial treatment, you can move on to our £95.99 Professional Inspection & Treatment service. A professional can inspect the property, assess the situation and carry out appropriate treatment where applicable.` }
+            ].map((s) => (
+              <div key={s.n} className="p-5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2">
+                <div className="w-7 h-7 rounded-full bg-brand-green text-white font-black flex items-center justify-center text-xs">{s.n}</div>
+                <div className="font-extrabold text-white text-base">{s.t}</div>
+                <p className="text-slate-300 text-xs leading-relaxed">{s.d}</p>
               </div>
-              <div className="font-extrabold text-white text-base">Quick Questions</div>
-              <p className="text-slate-300 text-xs leading-relaxed">
-                We'll ask you a few simple questions about what you've seen and where activity is occurring.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2">
-              <div className="w-7 h-7 rounded-full bg-brand-green text-white font-black flex items-center justify-center text-xs">
-                2
-              </div>
-              <div className="font-extrabold text-white text-base">Claim Free Product</div>
-              <div className="w-full h-20 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 my-1.5">
-                <img
-                  src="/Images/three-products.jpg"
-                  alt={details.kitName}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <p className="text-slate-300 text-xs leading-relaxed">
-                If eligible, claim your available {details.kitName} and pay only delivery.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2">
-              <div className="w-7 h-7 rounded-full bg-brand-green text-white font-black flex items-center justify-center text-xs">
-                3
-              </div>
-              <div className="font-extrabold text-white text-base">7-Day Monitoring</div>
-              <p className="text-slate-300 text-xs leading-relaxed">
-                You'll monitor the situation and log updates directly in your online customer dashboard.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2">
-              <div className="w-7 h-7 rounded-full bg-brand-green text-white font-black flex items-center justify-center text-xs">
-                4
-              </div>
-              <div className="font-extrabold text-white text-base">Professional Service</div>
-              <p className="text-slate-300 text-xs leading-relaxed">
-                If activity continues, seamlessly move to our fixed-fee professional visit.
-              </p>
-            </div>
+            ))}
           </div>
-
-          <div className="pt-2 relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+          <div className="pt-2 relative z-10">
             <button
               type="button"
               onClick={() => onStartEligibility(details.name)}
-              className="px-8 py-4 rounded-full bg-brand-green hover:bg-brand-green-dark text-white font-extrabold text-sm sm:text-base shadow-lg transition-all inline-flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              className="px-8 py-4 rounded-full bg-brand-green hover:bg-brand-green-dark text-white font-extrabold text-sm sm:text-base shadow-lg transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>START YOUR FREE PRODUCT JOURNEY</span>
               <ArrowRight className="w-4 h-4" />
@@ -257,54 +242,56 @@ export const PestHubPage: React.FC<PestHubPageProps> = ({
         </section>
 
         {/* Professional Service Section */}
-        <section className="bg-white rounded-3xl p-8 sm:p-12 border-2 border-brand-purple/20 shadow-md flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-bold uppercase tracking-wider">
-              <ShieldCheck className="w-4 h-4" />
-              <span>Professional Service</span>
+        <section className="bg-white rounded-3xl p-8 sm:p-12 border-2 border-brand-purple/20 shadow-md space-y-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+            <div className="space-y-3 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-bold uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Professional Service</span>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {proInclude?.title ?? 'Still Seeing Activity?'}
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                If you've followed the instructions and you're still seeing signs of activity, don't keep guessing.
+              </p>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Our professional service gives you the opportunity to have the property inspected and the situation assessed by a professional.
+              </p>
             </div>
-
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Still Seeing Activity?
-            </h3>
-
-            <div className="text-base font-bold text-brand-purple">
-              Book a Professional Inspection
-            </div>
-
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Our professional service is designed for customers who have tried the initial treatment but are still seeing signs of activity, or who need urgent, qualified technician intervention on-site.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-semibold text-slate-700">
-              <span className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full">
-                <CheckCircle2 className="w-3.5 h-3.5 text-brand-green" /> BPCA Certified Technicians
-              </span>
-              <span className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full">
-                <CheckCircle2 className="w-3.5 h-3.5 text-brand-green" /> Complete Property Assessment
-              </span>
-              <span className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full">
-                <CheckCircle2 className="w-3.5 h-3.5 text-brand-green" /> Fixed Price £95.99
-              </span>
+            <div className="w-full lg:w-auto shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3">
+              <button
+                type="button"
+                onClick={onBookProfessional}
+                className="px-8 py-4 rounded-full bg-brand-purple hover:bg-brand-purple-dark text-white font-extrabold text-sm sm:text-base text-center transition-all shadow-md active:scale-98 cursor-pointer"
+              >
+                BOOK FOR £95.99
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate('professional-treatment')}
+                className="px-6 py-2.5 rounded-full text-xs font-bold text-slate-600 hover:text-brand-purple hover:bg-slate-100 text-center transition-colors cursor-pointer"
+              >
+                Learn about our treatments →
+              </button>
             </div>
           </div>
 
-          <div className="w-full lg:w-auto shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3">
-            <button
-              type="button"
-              onClick={onBookProfessional}
-              className="px-8 py-4 rounded-full bg-brand-purple hover:bg-brand-purple-dark text-white font-extrabold text-sm sm:text-base text-center transition-all shadow-md active:scale-98 cursor-pointer"
-            >
-              BOOK FOR £95.99
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('professional-treatment')}
-              className="px-6 py-2.5 rounded-full text-xs font-bold text-slate-600 hover:text-brand-purple hover:bg-slate-100 text-center transition-colors cursor-pointer"
-            >
-              Learn about our treatments →
-            </button>
-          </div>
+          {proInclude && (
+            <div className="border-t border-slate-100 pt-6 space-y-4">
+              <h4 className="text-base font-extrabold text-slate-900">
+                Professional Inspection &amp; Treatment — £95.99 includes:
+              </h4>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {proInclude.items.map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-sm text-slate-700">
+                    <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       </div>
     </div>

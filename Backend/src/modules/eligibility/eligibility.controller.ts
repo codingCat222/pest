@@ -10,4 +10,13 @@ export const EligibilityController = {
       res.status(err.status || 500).json({ error: err.message || 'Error checking eligibility' });
     }
   },
+
+  async claim(req: Request, res: Response) {
+    try {
+      const result = await EligibilityService.claim(req.body);
+      res.status(201).json(result);
+    } catch (err: any) {
+      res.status(err.status || 500).json({ error: err.message || 'Unable to create your account' });
+    }
+  },
 };

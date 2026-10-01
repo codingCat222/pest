@@ -7,6 +7,7 @@ import { CaseRecord } from '../../types';
 import { CasesService, UNPAID_CASE_STATUSES } from '../../services/cases';
 import { PaymentsService } from '../../services/payments';
 import { apiErrorMessage } from '../../services/format';
+import { PrivacyNoticeShort } from '../PrivacyNoticeShort';
 
 const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
 const stripePromise = publishableKey ? loadStripe(publishableKey) : null;
@@ -62,6 +63,7 @@ const PaymentForm: React.FC<{
         <form onSubmit={handleSubmit} className="space-y-5">
             <PaymentElement />
             {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
+            <PrivacyNoticeShort />
             <button
                 type="submit"
                 disabled={!stripe || submitting}

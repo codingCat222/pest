@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CaseRecord } from '../types';
 import { Calendar, Clock, CheckCircle2, X, ArrowRight, ShieldCheck, MapPin, CreditCard, Lock } from 'lucide-react';
+import { PrivacyNoticeShort } from './PrivacyNoticeShort';
 
 interface ProfessionalBookingModalProps {
   currentCase: CaseRecord;
@@ -96,7 +97,7 @@ export const ProfessionalBookingModal: React.FC<ProfessionalBookingModalProps> =
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span>Golf size proofing materials</span>
+                <span>Golf-ball-size hole proofing materials</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
@@ -116,8 +117,8 @@ export const ProfessionalBookingModal: React.FC<ProfessionalBookingModalProps> =
                   key={d.date}
                   onClick={() => setSelectedDate(d.date)}
                   className={`p-3 rounded-xl text-center border text-xs transition-all ${selectedDate === d.date
-                      ? 'bg-blue-600 text-white font-bold border-blue-600 shadow-sm'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    ? 'bg-blue-600 text-white font-bold border-blue-600 shadow-sm'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                     }`}
                 >
                   <div className="text-[10px] opacity-75">{d.label}</div>
@@ -138,8 +139,8 @@ export const ProfessionalBookingModal: React.FC<ProfessionalBookingModalProps> =
                   key={slot}
                   onClick={() => setSelectedSlot(slot)}
                   className={`p-3 rounded-xl text-left border text-xs flex items-center justify-between transition-all ${selectedSlot === slot
-                      ? 'bg-blue-50 border-blue-600 text-blue-950 font-bold'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-blue-50 border-blue-600 text-blue-950 font-bold'
+                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                 >
                   <span className="flex items-center gap-2">
@@ -159,6 +160,7 @@ export const ProfessionalBookingModal: React.FC<ProfessionalBookingModalProps> =
           </div>
 
           <div className="pt-2">
+            <PrivacyNoticeShort />
             <button
               type="submit"
               disabled={isSubmitting}

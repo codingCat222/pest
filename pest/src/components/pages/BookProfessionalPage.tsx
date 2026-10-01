@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { CaseRecord } from '../../types';
 import { CheckCircle2, Clock, ArrowLeft, ArrowRight, MapPin, CalendarCheck } from 'lucide-react';
+import { PrivacyNoticeShort } from '../PrivacyNoticeShort';
 
 interface BookProfessionalPageProps {
     currentCase: CaseRecord;
@@ -21,7 +22,7 @@ const INCLUDES = [
     'High Strength professional bait',
     'Powerful ultrasonic inspection camera',
     'Heat Steamer (for stubborn bedbugs)',
-    'Golf size proofing materials',
+    'Golf-ball-size hole proofing materials',
     'Review of previous treatment',
 ];
 
@@ -196,6 +197,7 @@ export const BookProfessionalPage: React.FC<BookProfessionalPageProps> = ({
                     </div>
 
                     {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
+                    <PrivacyNoticeShort />
                     <button
                         type="submit"
                         disabled={isSubmitting}

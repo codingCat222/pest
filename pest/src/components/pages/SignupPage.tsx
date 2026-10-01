@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { PrivacyNoticeShort } from '../PrivacyNoticeShort';
 
 interface SignupPageProps {
     onSignupSuccess: () => void;
@@ -175,6 +176,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
                         </p>
                     )}
 
+                    <PrivacyNoticeShort />
                     <button
                         type="submit"
                         disabled={isSubmitting}

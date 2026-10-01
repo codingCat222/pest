@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../../lib/prisma';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { sendWelcomeEmail } from '../../lib/welcome-email';
 
 const TOKEN_EXPIRY = '7d';
 
@@ -75,6 +76,8 @@ export const AuthService = {
     });
 
     await claimUnlinkedCases(user.id, email);
+
+    void sendWelcomeEmail({ email: user.email, fullName: user.fullName });
 
     const token = this.signToken({ userId: user.id, email: user.email, role: user.role });
 

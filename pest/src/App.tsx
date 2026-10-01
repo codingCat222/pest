@@ -56,6 +56,18 @@ import { ActivityReportsService } from './services/activityReports';
 import { AppointmentsService } from './services/appointments';
 import { apiErrorMessage } from './services/format';
 
+// Maps logical page names (used by Navbar/Footer/PestHubPage) to real URL paths.
+const PEST_PAGES = ['rats-mice', 'bedbugs', 'cockroaches', 'foxes', 'ants'];
+export function pageToPath(page: string): string {
+  if (page === 'home') return '/';
+  if (PEST_PAGES.includes(page)) return `/pests/${page}`;
+  if (page === 'about-us') return '/about';
+  if (page === 'eligibility') return '/check-eligibility';
+  if (page === 'other') return '/contact';
+  return `/${page}`;
+}
+
+
 function EmptyDashboard({ onCheckEligibility }: { onCheckEligibility: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center gap-4 max-w-md mx-auto">
@@ -129,7 +141,7 @@ function PublicLayout({
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-brand-green selection:text-white">
       <Navbar
-        onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
+        onNavigate={(page) => navigate(pageToPath(page))}
         onOpenEligibility={() => goToEligibility()}
         onOpenLogin={() => navigate('/login')}
         onOpenSignup={() => navigate('/signup')}
@@ -147,21 +159,25 @@ function PublicLayout({
               </>
             }
           />
+          {PEST_PAGES.map((k) => (
+            <Route key={`redir-${k}`} path={`/${k}`} element={<Navigate to={`/pests/${k}`} replace />} />
+          ))}
+          <Route path="/about-us" element={<Navigate to="/about" replace />} />
           <Route path="/how-it-works" element={<HowItWorksPage onStartEligibility={() => goToEligibility()} onBookProfessional={goToBooking} />} />
           <Route path="/free-products" element={<FreeProductsPage onStartEligibility={() => goToEligibility()} />} />
-          <Route path="/pests/rats-mice" element={<PestHubPage pestKey="rats-mice" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Rats or mice')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/pests/bedbugs" element={<PestHubPage pestKey="bedbugs" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Bedbugs')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/pests/cockroaches" element={<PestHubPage pestKey="cockroaches" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Cockroaches')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/pests/foxes" element={<PestHubPage pestKey="foxes" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Foxes')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/pests/ants" element={<PestHubPage pestKey="ants" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Ants')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/pests/rats-mice" element={<PestHubPage pestKey="rats-mice" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Rats or mice')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pageToPath(page))} />} />
+          <Route path="/pests/bedbugs" element={<PestHubPage pestKey="bedbugs" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Bedbugs')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pageToPath(page))} />} />
+          <Route path="/pests/cockroaches" element={<PestHubPage pestKey="cockroaches" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Cockroaches')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pageToPath(page))} />} />
+          <Route path="/pests/foxes" element={<PestHubPage pestKey="foxes" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Foxes')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pageToPath(page))} />} />
+          <Route path="/pests/ants" element={<PestHubPage pestKey="ants" onStartEligibility={(p) => goToEligibility((p as PestType) || 'Ants')} onBookProfessional={goToBooking} onNavigate={(page) => navigate(pageToPath(page))} />} />
           <Route path="/professional-treatment" element={<ProfessionalTreatmentPage onBookProfessional={goToBooking} />} />
           <Route path="/proofing" element={<ProofingPage onStartEligibility={() => goToEligibility()} onBookProfessional={goToBooking} />} />
           <Route path="/faqs" element={<FaqsPage onStartEligibility={() => goToEligibility()} />} />
           <Route path="/about" element={<AboutUsPage onStartEligibility={() => goToEligibility()} />} />
-          <Route path="/contact" element={<ContactPage onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/terms" element={<LegalPage initialSection="terms" onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/privacy" element={<LegalPage initialSection="privacy" onNavigate={(page) => navigate(`/${page}`)} />} />
-          <Route path="/cookies" element={<LegalPage initialSection="cookies" onNavigate={(page) => navigate(`/${page}`)} />} />
+          <Route path="/contact" element={<ContactPage onNavigate={(page) => navigate(pageToPath(page))} />} />
+          <Route path="/terms" element={<LegalPage initialSection="terms" onNavigate={(page) => navigate(pageToPath(page))} />} />
+          <Route path="/privacy" element={<LegalPage initialSection="privacy" onNavigate={(page) => navigate(pageToPath(page))} />} />
+          <Route path="/cookies" element={<LegalPage initialSection="cookies" onNavigate={(page) => navigate(pageToPath(page))} />} />
           <Route path="/check-eligibility" element={<EligibilityPage onOrderCompleted={handleOrderCompleted} />} />
           <Route
             path="/checkout/:caseId"
@@ -194,7 +210,7 @@ function PublicLayout({
                   onLoginSuccess(role);
                   navigate(role === 'admin' ? '/admin' : '/dashboard');
                 }}
-                onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
+                onNavigate={(page) => navigate(pageToPath(page))}
               />
             }
           />
@@ -206,15 +222,16 @@ function PublicLayout({
                   onLoginSuccess('customer');
                   navigate('/dashboard');
                 }}
-                onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
+                onNavigate={(page) => navigate(pageToPath(page))}
               />
             }
           />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
       <Footer
-        onNavigate={(page) => navigate(page === 'home' ? '/' : `/${page}`)}
+        onNavigate={(page) => navigate(pageToPath(page))}
         onOpenEligibility={() => goToEligibility()}
         onOpenBooking={goToBooking}
         onOpenLogin={() => navigate('/login')}
@@ -566,7 +583,7 @@ function AppRoutes() {
         setCases(fetched);
         setActiveCase((prev) => fetched.find((c) => c.id === prev?.id) ?? fetched[0] ?? null);
         setCasesStatus('ready');
-        if (createdId) navigate(`/checkout/${createdId}`);
+        if (createdId) navigate('/dashboard');
       })
       .catch((err: any) => {
         if (cancelled) return;

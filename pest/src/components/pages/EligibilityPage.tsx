@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PestType, ActivityLocation, CaseRecord } from '../../types';
 import { useAuth } from '../../context/AuthContext';
-import { CasesService, CreateCasePayload } from '../../services/cases';
+import { EligibilityModal } from '../EligibilityModal';
+import { EligibilityProduct, EligibilityService } from '../../services/eligibility';
 import { apiErrorMessage } from '../../services/format';
+import { PrivacyNoticeShort } from '../PrivacyNoticeShort';
 
 interface EligibilityPageProps {
     onOrderCompleted: (newCase: CaseRecord) => void;
@@ -19,6 +21,7 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
     const { user } = useAuth();
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [eligibleProduct, setEligibleProduct] = useState<EligibilityProduct | null>(null);
     const [searchParams] = useSearchParams();
 
     const [pest, setPest] = useState<PestType>((searchParams.get('pest') as PestType) || 'Rats or mice');
@@ -38,31 +41,16 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitError(null);
-
-        const payload: CreateCasePayload = {
-            propertyName: address || 'My Property',
-            customerName: name,
-            customerEmail: email,
-            customerPhone: mobile,
-            propertyAddress: address,
-            postcode,
-            pest,
-            location,
-        };
-
-        if (!user) {
-            sessionStorage.setItem('pendingCase', JSON.stringify(payload));
-            navigate('/signup');
-            return;
-        }
-
         setSubmitting(true);
         try {
-            const created = await CasesService.create(payload);
-            onOrderCompleted(created);
-            navigate(`/checkout/${created.id}`);
+            const result = await EligibilityService.check(pest, postcode);
+            if (!result.eligible || !result.product) {
+                setSubmitError(result.reason ?? "Sorry, we can't offer a free product for this request right now.");
+                return;
+            }
+            setEligibleProduct(result.product);
         } catch (err) {
-            setSubmitError(apiErrorMessage(err, 'Unable to submit your request. Please try again.'));
+            setSubmitError(apiErrorMessage(err, 'Unable to check your eligibility. Please try again.'));
         } finally {
             setSubmitting(false);
         }
@@ -218,17 +206,39 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
                     </div>
 
                     {submitError && <p className="text-sm font-semibold text-red-600">{submitError}</p>}
+                    <PrivacyNoticeShort />
                     <button
                         type="submit"
                         disabled={submitting}
                         className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                     >
-                        <span>{submitting ? 'Submitting...' : 'Check My Eligibility'}</span>
+                        <span>{submitting ? 'Checking...' : 'Check My Eligibility'}</span>
                         <span>→</span>
                     </button>
 
                 </form>
             </div>
+
+            {eligibleProduct && (
+                <EligibilityModal
+                    details={{
+                        fullName: name,
+                        email,
+                        phone: mobile,
+                        propertyAddress: address,
+                        postcode,
+                        pest,
+                        location,
+                    }}
+                    product={eligibleProduct}
+                    isLoggedIn={!!user}
+                    onClose={() => setEligibleProduct(null)}
+                    onFinished={(created) => {
+                        onOrderCompleted(created);
+                        navigate('/dashboard');
+                    }}
+                />
+            )}
         </div>
     );
 };

@@ -52,6 +52,11 @@ export const AuthService = {
         return data;
     },
 
+    startSession(data: AuthResponse): AuthUser {
+        persistSession(data);
+        return data.user;
+    },
+
     async logout(): Promise<void> {
         try {
             await api.post('/auth/logout');

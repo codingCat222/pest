@@ -33,7 +33,7 @@ export const FAQ_DATA = [
       },
       {
         q: 'Does £95.99 include proofing?',
-        a: 'The £95.99 visit includes assessment of potential entry routes and initial golf-ball sized proofing where applicable. If extensive structural sealing is required, the technician provides a clear itemised quote.'
+        a: 'The £95.99 visit includes assessment of potential entry routes and initial golf-ball-size hole proofing where applicable (rodents). If extensive structural sealing is required, the technician provides a clear itemised quote.'
       },
       {
         q: 'Do I have to buy proofing?',
@@ -85,6 +85,139 @@ export const FAQ_DATA = [
     ]
   }
 ];
+
+// -------------------------------------------------------------
+// PACK ITEMS — now pest-specific
+// -------------------------------------------------------------
+export const PACK_ITEMS: Record<string, string[]> = {
+  'rats-mice': [
+    '2 Ultrasonic Pest Repellents',
+    '2 Wooden Traps',
+    '2 Plastic Bait boxes'
+  ],
+  'bedbugs': [
+    '2 Ultrasonic Pest Repellents',
+    '2 Bedbug Interception Traps',
+    '2 Monitoring Disks'
+  ],
+  'cockroaches': [
+    '2 Ultrasonic Pest Repellents',
+    '2 Cockroach Gel Bait Stations',
+    '2 Sticky Monitoring Traps'
+  ],
+  'foxes': [
+    '2 Ultrasonic Pest Repellents',
+    '2 Fox Deterrent Sachets',
+    '2 Perimeter Marking Stakes'
+  ],
+  'ants': [
+    '2 Ultrasonic Pest Repellents',
+    '2 Ant Bait Stations',
+    '2 Ant Gel Syringes'
+  ],
+  'other': [
+    '2 Ultrasonic Pest Repellents',
+    '2 Multi-Species Monitoring Traps',
+    '2 Specialist Bait Stations'
+  ]
+};
+
+export const PACK_LABELS: Record<string, string> = {
+  'rats-mice': 'rat-control',
+  'bedbugs': 'bedbug-control',
+  'cockroaches': 'cockroach-control',
+  'foxes': 'fox-control',
+  'ants': 'ant-control',
+  'other': 'pest-control'
+};
+
+export const PRO_SERVICE_INCLUDES: Record<string, { title: string; items: string[] }> = {
+  'rats-mice': {
+    title: 'Still Seeing Rats or Mice?',
+    items: [
+      'Property inspection',
+      'High Strength bait',
+      'Powerful ultrasonic inspection camera',
+      'Golf-ball-size hole proofing materials',
+      'Assessment of signs of activity',
+      'Identification of likely activity areas',
+      'Review of previous treatment',
+      'Appropriate professional treatment where applicable',
+      'Recommendations for next steps',
+      'Assessment of potential entry points'
+    ]
+  },
+  'bedbugs': {
+    title: 'Still Seeing Bed bugs?',
+    items: [
+      'Property inspection',
+      'Powerful ultrasonic inspection camera',
+      'Spraying of one room',
+      'Micro session with Heat Steamer (for stubborn bedbugs)',
+      'UV Light inspection',
+      'Assessment of signs of activity',
+      'Identification of likely activity areas',
+      'Review of previous treatment',
+      'Appropriate professional treatment where applicable',
+      'Recommendations for next steps',
+      'Assessment of potential entry points'
+    ]
+  },
+  'ants': {
+    title: 'Still Seeing Ants?',
+    items: [
+      'Property inspection',
+      'High Strength bait',
+      'Powerful ultrasonic inspection camera',
+      'Gap proofing materials',
+      'Assessment of signs of activity',
+      'Identification of likely activity areas',
+      'Review of previous treatment',
+      'Appropriate professional treatment where applicable',
+      'Recommendations for next steps',
+      'Assessment of potential entry points'
+    ]
+  },
+  'cockroaches': {
+    title: 'Still Seeing Cockroaches?',
+    items: [
+      'Property inspection',
+      'High Strength bait / professional spray treatment',
+      'Powerful ultrasonic inspection camera',
+      'Assessment of signs of activity',
+      'Identification of likely activity areas',
+      'Review of previous treatment',
+      'Appropriate professional treatment where applicable',
+      'Recommendations for next steps',
+      'Assessment of potential entry points'
+    ]
+  },
+  'foxes': {
+    title: 'Still Seeing Foxes?',
+    items: [
+      'Property inspection',
+      'Assessment of signs of activity',
+      'Identification of likely activity areas',
+      'Application of High strength deterrent treatment',
+      'Appropriate professional treatment where applicable',
+      'Recommendations for Trapping Upgrade',
+      'Assessment of potential entry points'
+    ]
+  },
+  'other': {
+    title: 'Still Seeing Other Pests?',
+    items: [
+      'Property inspection',
+      'Powerful ultrasonic inspection camera',
+      'Assessment of signs of activity',
+      'Identification of likely activity areas',
+      'Review of previous treatment',
+      'Appropriate professional treatment where applicable',
+      'Recommendations for next steps',
+      'Assessment of potential entry points'
+    ]
+  }
+};
 
 export const PEST_DETAILS: Record<string, {
   name: string;
