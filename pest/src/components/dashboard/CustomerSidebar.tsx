@@ -18,6 +18,7 @@ import {
   User,
   ExternalLink,
   ShieldCheck,
+  X,
 } from 'lucide-react';
 
 interface CustomerSidebarProps {
@@ -28,6 +29,8 @@ interface CustomerSidebarProps {
   onSelectCase: (caseRecord: CaseRecord) => void;
   onSwitchPersona: (persona: PortalPersona) => void;
   onSignOut: () => void;
+  variant?: 'desktop' | 'drawer';
+  onClose?: () => void;
 }
 
 export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
@@ -37,7 +40,9 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
   activeCase,
   onSelectCase,
   onSwitchPersona,
-  onSignOut
+  onSignOut,
+  variant = 'desktop',
+  onClose
 }) => {
   const { user } = useAuth();
   const displayName = user?.fullName ?? activeCase?.customerName ?? '';
@@ -45,9 +50,15 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   return (
-    <aside className="w-64 shrink-0 bg-white border-r border-slate-200/90 flex flex-col justify-between h-screen sticky top-0 z-30 select-none">
+    <aside
+      className={
+        variant === 'drawer'
+          ? 'w-full h-full bg-white flex flex-col justify-between select-none'
+          : 'w-64 shrink-0 bg-white border-r border-slate-200/90 flex flex-col justify-between h-screen sticky top-0 z-30 select-none'
+      }
+    >
 
-      <div className="flex flex-col min-h-0">
+      <div className="flex flex-col flex-1 min-h-0">
 
         <div className="p-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
@@ -62,6 +73,16 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 Customer Portal
               </div>
             </div>
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close menu"
+                className="ml-auto p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
           </div>
 
           <div className="relative mt-3">

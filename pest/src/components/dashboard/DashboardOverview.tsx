@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import { CaseRecord, CustomerNavTab } from '../../types';
+import { Avatar } from '../Avatar';
+import { useAuth } from '../../context/AuthContext';
 import {
   LineChart,
   Line,
@@ -89,16 +91,24 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   const upcomingCount = activeCase.appointmentDate ? 1 : 0;
   const documentsCount = 2 + (activeCase.proofingQuote ? 1 : 0);
 
+  const { user } = useAuth();
+  const displayName = user?.fullName ?? activeCase.customerName;
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
   return (
     <div className="space-y-6 pb-16">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-purple tracking-tight">
-            Good morning, {activeCase.customerName.split(' ')[0]}
-          </h1>
-          <p className="mt-1 text-sm text-brand-purple-soft">
-            Here&apos;s an overview of your {activeCase.pest.toLowerCase()} treatment journey at {activeCase.propertyAddress}.
-          </p>
+        <div className="flex items-center gap-4">
+          <Avatar name={displayName} src={user?.avatarUrl} className="w-14 h-14 sm:w-16 sm:h-16 text-lg" />
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-purple tracking-tight">
+              {greeting}, {displayName.split(' ')[0]}
+            </h1>
+            <p className="mt-1 text-sm text-brand-purple-soft">
+              Here&apos;s an overview of your {activeCase.pest.toLowerCase()} treatment journey at {activeCase.propertyAddress}.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">

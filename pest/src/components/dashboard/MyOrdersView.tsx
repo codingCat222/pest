@@ -32,8 +32,11 @@ export const MyOrdersView: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+        <div className="sm:hidden px-4 py-2 text-[11px] font-medium text-slate-400 border-b border-slate-100">
+          Swipe sideways to see all columns →
+        </div>
+        <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
+          <table className="w-full min-w-[760px] text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 <th className="py-3.5 px-4 sm:px-6">Order</th>

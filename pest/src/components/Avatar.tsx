@@ -4,6 +4,7 @@ interface AvatarProps {
     name?: string;
     src?: string | null;
     className?: string;
+    bgClass?: string;
 }
 
 export function initialsOf(name?: string) {
@@ -12,7 +13,7 @@ export function initialsOf(name?: string) {
     return ((parts[0]?.[0] ?? '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase() || '?';
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ name, src, className = 'w-8 h-8 text-xs' }) => {
+export const Avatar: React.FC<AvatarProps> = ({ name, src, className = 'w-8 h-8 text-xs', bgClass = 'bg-slate-900' }) => {
     if (src) {
         return (
             <img
@@ -23,7 +24,7 @@ export const Avatar: React.FC<AvatarProps> = ({ name, src, className = 'w-8 h-8 
         );
     }
     return (
-        <div className={`${className} rounded-full bg-slate-900 text-white font-bold flex items-center justify-center shrink-0`}>
+        <div className={`${className} rounded-full ${bgClass} text-white font-bold flex items-center justify-center shrink-0`}>
             {initialsOf(name)}
         </div>
     );

@@ -369,38 +369,26 @@ function DashboardLayout({
       </div>
 
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex">
-          <div className="w-72 bg-white h-full flex flex-col justify-between shadow-2xl">
-            <div className="p-4 border-b flex items-center justify-between">
-              <span className="font-bold text-sm">Customer Navigation</span>
-              <button type="button" onClick={() => setMobileMenuOpen(false)} className="p-1 rounded-lg text-slate-400 hover:text-slate-900 cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-4 overflow-y-auto space-y-4 flex-1 text-sm">
-              <div className="space-y-1">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Active Property</div>
-                <div className="p-2.5 rounded-xl bg-slate-50 border text-xs font-semibold text-slate-800">
-                  {activeCase ? activeCase.propertyName : 'No case yet'}
-                </div>
-              </div>
-              <div className="space-y-1">
-                {(['dashboard', 'journey', 'orders', 'appointments', 'monitoring', 'proofing', 'documents', 'account', 'help'] as CustomerNavTab[]).map((tab) => (
-                  <button key={tab} type="button" onClick={() => { goTab(tab); setMobileMenuOpen(false); }} className="w-full text-left py-2 px-3 rounded-lg hover:bg-slate-100 font-medium cursor-pointer capitalize">
-                    {tab}
-                  </button>
-                ))}
-              </div>
-              <div className="pt-3 border-t space-y-1">
-                <button type="button" onClick={() => { navigate('/'); setMobileMenuOpen(false); }} className="w-full text-left py-2 px-3 rounded-lg text-brand-green bg-brand-green/10 text-xs font-bold cursor-pointer">
-                  View Public Website
-                </button>
-                <button type="button" onClick={() => { setMobileMenuOpen(false); signOut(); }} className="w-full text-left py-2 px-3 rounded-lg text-red-600 bg-red-50 text-xs font-bold cursor-pointer">
-                  Sign Out
-                </button>
-              </div>
-            </div>
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="w-72 max-w-[85vw] h-[100dvh] bg-white shadow-2xl">
+            <CustomerSidebar
+              variant="drawer"
+              currentTab={currentTab}
+              onSelectTab={(tab) => { goTab(tab); setMobileMenuOpen(false); }}
+              cases={cases}
+              activeCase={activeCase}
+              onSelectCase={(c) => { setActiveCase(c); setMobileMenuOpen(false); }}
+              onSwitchPersona={() => { navigate('/'); setMobileMenuOpen(false); }}
+              onSignOut={() => { setMobileMenuOpen(false); signOut(); }}
+              onClose={() => setMobileMenuOpen(false)}
+            />
           </div>
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex-1 bg-slate-950/70 backdrop-blur-xs cursor-default"
+          />
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Menu, X, ChevronDown, Search, LogOut, LayoutDashboard } from 'lucide-react';
 import { NavigationPage } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { Avatar } from './Avatar';
 
 interface NavbarProps {
   currentPage?: NavigationPage;
@@ -54,10 +55,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     setMobileOpen(false);
     onNavigate(user?.role === 'ADMIN' ? ('admin' as NavigationPage) : ('dashboard' as NavigationPage));
   };
-
-  const initials = user?.fullName
-    ? user.fullName.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase()
-    : '';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 520);
@@ -193,9 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onMouseEnter={() => setAccountMenuOpen(true)}
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <span className="w-9 h-9 rounded-full bg-brand-purple text-white font-bold text-xs flex items-center justify-center shrink-0">
-                    {initials || 'U'}
-                  </span>
+                  <Avatar name={user.fullName} src={user.avatarUrl} className="w-9 h-9 text-xs" bgClass="bg-brand-purple" />
                   <span className="whitespace-nowrap text-[15px] font-semibold text-brand-purple max-w-[9rem] truncate">
                     {user.fullName}
                   </span>
@@ -252,9 +247,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Mobile controls */}
           <div className="flex md:hidden items-center gap-2 ml-auto">
             {user ? (
-              <span className="w-8 h-8 rounded-full bg-brand-purple text-white font-bold text-xs flex items-center justify-center shrink-0">
-                {initials || 'U'}
-              </span>
+              <Avatar name={user.fullName} src={user.avatarUrl} className="w-8 h-8 text-xs" bgClass="bg-brand-purple" />
             ) : (
               <button
                 type="button"
