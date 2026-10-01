@@ -3,6 +3,7 @@ import { ProductItem } from '../../types';
 import { Search, Package, Plus, Pencil, Trash2, X } from 'lucide-react';
 import { AdminService, CreateProductPayload } from '../../services/admin';
 import { apiErrorMessage } from '../../services/format';
+import { PRODUCT_PEST_TARGETS } from '../../constants/pests';
 
 interface ProductForm {
     name: string;
@@ -35,7 +36,7 @@ const emptyForm: ProductForm = {
 const toForm = (p: ProductItem): ProductForm => ({
     name: p.name,
     category: p.category,
-    pestTarget: p.pestTarget,
+    pestTarget: PRODUCT_PEST_TARGETS.includes(p.pestTarget) ? p.pestTarget : '',
     regularPrice: String(p.regularPrice),
     deliveryCost: String(p.deliveryCost),
     description: p.description,
@@ -102,7 +103,7 @@ export const AdminProductsView: React.FC = () => {
     };
 
     const setField = (key: keyof ProductForm) => (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -111,8 +112,12 @@ export const AdminProductsView: React.FC = () => {
 
         const regularPrice = parseFloat(form.regularPrice);
         const deliveryCost = parseFloat(form.deliveryCost);
-        if (!form.name.trim() || !form.category.trim() || !form.pestTarget.trim()) {
-            setFormError('Name, category and pest target are required.');
+        if (!form.name.trim() || !form.category.trim()) {
+            setFormError('Name and category are required.');
+            return;
+        }
+        if (!PRODUCT_PEST_TARGETS.includes(form.pestTarget)) {
+            setFormError('Choose which pest this product is for, so customers can get it.');
             return;
         }
         if (isNaN(regularPrice) || regularPrice < 0 || isNaN(deliveryCost) || deliveryCost < 0) {
@@ -217,6 +222,11 @@ export const AdminProductsView: React.FC = () => {
                             <div>
                                 <div className="font-bold text-sm text-slate-900">{p.name}</div>
                                 <div className="text-[11px] text-slate-500 mt-0.5">Targets: {p.pestTarget}</div>
+                                {!PRODUCT_PEST_TARGETS.includes(p.pestTarget) && (
+                                    <div className="mt-2 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+                                        Not linked to a pest customers can pick, so nobody can get this product yet. Edit it and choose a pest.
+                                    </div>
+                                )}
                             </div>
 
                             <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-3">{p.description}</p>
@@ -282,7 +292,15 @@ export const AdminProductsView: React.FC = () => {
                             </label>
                             <label className="text-[11px] font-bold text-slate-600 space-y-1 block">
                                 Pest target
-                                <input className={inputClass} value={form.pestTarget} onChange={setField('pestTarget')} />
+                                <select className={inputClass} value={form.pestTarget} onChange={setField('pestTarget')}>
+                                    <option value="">Choose a pest...</option>
+                                    {PRODUCT_PEST_TARGETS.map((pest) => (
+                                        <option key={pest} value={pest}>{pest}</option>
+                                    ))}
+                                </select>
+                                <span className="block text-[10px] font-normal text-slate-400">
+                                    Customers who pick this pest on the eligibility form are offered this product.
+                                </span>
                             </label>
                             <label className="text-[11px] font-bold text-slate-600 space-y-1 block">
                                 Badge (optional)

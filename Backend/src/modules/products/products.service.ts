@@ -1,4 +1,5 @@
 import prisma from '../../lib/prisma';
+import { PEST_TARGETS } from '../../config/enums';
 
 export interface CreateProductDto {
   name: string;
@@ -15,6 +16,12 @@ export interface CreateProductDto {
 }
 
 export type UpdateProductDto = Partial<CreateProductDto>;
+
+function assertPestTarget(value: string) {
+  if (!PEST_TARGETS.includes(value)) {
+    throw { status: 400, message: `Pest target must be one of: ${PEST_TARGETS.join(', ')}` };
+  }
+}
 
 function serialize(product: any) {
   return {
@@ -43,6 +50,7 @@ export const ProductsService = {
   },
 
   async create(data: CreateProductDto) {
+    assertPestTarget(data.pestTarget);
     const product = await prisma.product.create({
       data: {
         name: data.name,
@@ -62,6 +70,7 @@ export const ProductsService = {
   },
 
   async update(id: string, data: UpdateProductDto) {
+    if (data.pestTarget !== undefined) assertPestTarget(data.pestTarget);
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) throw { status: 404, message: 'Product not found' };
 

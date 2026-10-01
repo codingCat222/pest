@@ -4,6 +4,8 @@ import { AuthService } from '../auth/auth.service';
 import { CasesService } from '../cases/cases.service';
 import { sendWelcomeEmail } from '../../lib/welcome-email';
 
+// Eligibility has no dedicated DB table — it's a stateless rules check run
+// against the pest + postcode the customer provides, before a Case exists.
 
 export interface EligibilityCheckDto {
   pest: string;
@@ -32,7 +34,7 @@ const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function findProductFor(pest: string) {
-  return prisma.product.findFirst({ where: { pestTarget: pest } });
+  return prisma.product.findFirst({ where: { pestTarget: pest }, orderBy: { createdAt: 'desc' } });
 }
 
 export const EligibilityService = {

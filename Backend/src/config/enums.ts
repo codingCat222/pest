@@ -20,4 +20,6 @@ export const CASE_STATUSES: CaseStatus[] = [
   'CLOSED', 'CANCELLED',
 ];
 
+export const PEST_TARGETS = ['Rats or mice', 'Bedbugs', 'Cockroaches', 'Foxes', 'Ants', 'Other'];
+
 export const ACTIVITY_LEVELS = ['No activity', 'Less activity', 'Same activity', 'More activity', 'Not sure'];

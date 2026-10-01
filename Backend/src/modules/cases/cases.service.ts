@@ -64,7 +64,7 @@ export const CasesService = {
     let productName = data.productName;
     let deliveryFee = data.deliveryFee;
     if (useCatalogue) {
-      const product = await prisma.product.findFirst({ where: { pestTarget: data.pest } });
+      const product = await prisma.product.findFirst({ where: { pestTarget: data.pest }, orderBy: { createdAt: 'desc' } });
       if (!product) {
         throw { status: 422, message: `We don't have a free product available for "${data.pest}" yet.` };
       }
