@@ -107,6 +107,16 @@ export const AdminService = {
         return data;
     },
 
+    async dispatchCase(caseId: string, payload: { courier: string; trackingNumber?: string }): Promise<CaseRecord> {
+        const { data } = await api.post(`/admin/cases/${caseId}/dispatch`, payload);
+        return adaptCase(data);
+    },
+
+    async deliverCase(caseId: string): Promise<CaseRecord> {
+        const { data } = await api.post(`/admin/cases/${caseId}/deliver`);
+        return adaptCase(data);
+    },
+
     async listProducts(): Promise<ProductItem[]> {
         const { data } = await api.get<ProductItem[]>('/admin/products');
         return data;

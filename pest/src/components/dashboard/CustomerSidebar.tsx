@@ -295,7 +295,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 <Activity className={`w-4 h-4 ${currentTab === 'monitoring' ? 'text-blue-600' : 'text-slate-400'}`} />
                 <span>Activity &amp; Monitoring</span>
               </div>
-              {activeCase && (
+              {activeCase && activeCase.monitoringDay > 0 && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
                   Day {activeCase.monitoringDay}
                 </span>

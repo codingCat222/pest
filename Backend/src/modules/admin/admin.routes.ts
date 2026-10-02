@@ -4,6 +4,7 @@ import { requireRole } from '../../common/guards/roles.guard';
 import { auditLog } from '../../common/interceptors/audit-log.interceptor';
 import { AdminOverviewController } from './admin-overview.controller';
 import { AdminCasesController } from './admin-cases.controller';
+import { AdminFulfilmentController } from './admin-fulfilment.controller';
 import { AdminProductsController } from './admin-products.controller';
 import { AdminTechniciansController } from './admin-technicians.controller';
 import { AdminProofingController } from './admin-proofing.controller';
@@ -22,6 +23,8 @@ router.get('/overview', AdminOverviewController.get);
 router.get('/cases', AdminCasesController.list);
 router.get('/cases/:id', AdminCasesController.getOne);
 router.post('/cases/reassign-technician', auditLog('Appointment', 'REASSIGN_TECHNICIAN'), AdminCasesController.reassignTechnician);
+router.post('/cases/:id/dispatch', auditLog('Case', 'DISPATCH'), AdminFulfilmentController.dispatch);
+router.post('/cases/:id/deliver', auditLog('Case', 'DELIVER'), AdminFulfilmentController.deliver);
 
 router.get('/products', AdminProductsController.list);
 router.post('/products', auditLog('Product', 'CREATE'), AdminProductsController.create);

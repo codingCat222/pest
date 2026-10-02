@@ -9,7 +9,20 @@ function generateReferenceNumber(): string {
   return `FPP-${num}`;
 }
 
+const MONITORING_STATUSES = ['DELIVERED', 'MONITORING', 'ACTIVITY_REPORTED', 'FOLLOW_UP_MONITORING'];
+
+function withMonitoringDay<T extends Record<string, any>>(caseRecord: T): T {
+  const deliveredAt = (caseRecord.orders as { deliveryDate: Date | null }[] | undefined)?.find((o) => o.deliveryDate)
+    ?.deliveryDate;
+  if (!deliveredAt || !MONITORING_STATUSES.includes(caseRecord.status)) return caseRecord;
+
+  const total = caseRecord.monitoringDaysTotal || 7;
+  const elapsed = Math.floor((Date.now() - new Date(deliveredAt).getTime()) / 86400000) + 1;
+  return { ...caseRecord, monitoringDay: Math.min(Math.max(elapsed, 1), total) };
+}
+
 const CASE_LIST_INCLUDE = {
+  orders: { select: { deliveryDate: true } },
   timelineEntries: { orderBy: { date: 'asc' as const } },
   photos: true,
   proofingQuote: true,
@@ -18,11 +31,12 @@ const CASE_LIST_INCLUDE = {
 
 export const CasesService = {
   async list(requestingUser: AuthedUser) {
-    return prisma.case.findMany({
+    const rows = await prisma.case.findMany({
       where: isStaff(requestingUser) ? undefined : { userId: requestingUser.userId },
       include: CASE_LIST_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
+    return rows.map(withMonitoringDay);
   },
 
   async getOne(id: string, requestingUser: AuthedUser) {
@@ -45,7 +59,7 @@ export const CasesService = {
       throw { status: 403, message: 'Forbidden: not your case' };
     }
 
-    return caseRecord;
+    return withMonitoringDay(caseRecord);
   },
 
   async create(data: CreateCaseDto, requestingUser: AuthedUser) {
