@@ -23,11 +23,12 @@ export interface ClaimPayload {
     postcode: string;
     pest: string;
     location: string;
+    productId?: string;
 }
 
 export const EligibilityService = {
-    async check(pest: string, postcode: string): Promise<EligibilityCheckResult> {
-        const { data } = await api.post<EligibilityCheckResult>('/eligibility/check', { pest, postcode });
+    async check(pest: string, postcode: string, productId?: string): Promise<EligibilityCheckResult> {
+        const { data } = await api.post<EligibilityCheckResult>('/eligibility/check', { pest, postcode, productId });
         return data;
     },
 

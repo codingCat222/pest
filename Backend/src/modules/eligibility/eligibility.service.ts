@@ -27,6 +27,7 @@ export interface ClaimDto {
   postcode: string;
   pest: string;
   location: string;
+  productId?: string;
 }
 
 // Simple UK postcode sanity check (not a full validator, just format-level).
@@ -106,6 +107,7 @@ export const EligibilityService = {
           postcode: data.postcode.trim().toUpperCase(),
           pest: data.pest.trim(),
           location: data.location,
+          productId: data.productId || undefined,
         },
         { userId: user.id, role: 'CUSTOMER' }
       );

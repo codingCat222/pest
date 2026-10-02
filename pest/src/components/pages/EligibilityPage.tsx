@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { PestType, ActivityLocation, CaseRecord } from '../../types';
+import { PestType, ActivityLocation, CaseRecord, ProductItem } from '../../types';
+import { ProductsService } from '../../services/products';
 import { useAuth } from '../../context/AuthContext';
 import { EligibilityModal } from '../EligibilityModal';
 import { EligibilityProduct, EligibilityService } from '../../services/eligibility';
 import { apiErrorMessage } from '../../services/format';
-import { PrivacyNoticeShort } from '../PrivacyNoticeShort';
 
 interface EligibilityPageProps {
     onOrderCompleted: (newCase: CaseRecord) => void;
@@ -33,6 +33,47 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
     const [mobile, setMobile] = useState('');
     const [postcode, setPostcode] = useState('');
     const [address, setAddress] = useState('');
+    const [products, setProducts] = useState<ProductItem[]>([]);
+    const [productsLoading, setProductsLoading] = useState(true);
+    const [productsError, setProductsError] = useState(false);
+    const [productId, setProductId] = useState('');
+
+    useEffect(() => {
+        let cancelled = false;
+        ProductsService.list()
+            .then((data) => {
+                if (!cancelled) setProducts(data);
+            })
+            .catch(() => {
+                if (!cancelled) setProductsError(true);
+            })
+            .finally(() => {
+                if (!cancelled) setProductsLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const selectedProduct = products.find((p) => p.id === productId);
+
+    useEffect(() => {
+        if (products.length === 0) return;
+        setProductId((current) => current || products.find((p) => p.pestTarget === pest)?.id || '');
+    }, [products]);
+
+    const handlePestChange = (value: PestType) => {
+        setPest(value);
+        setProductId(products.find((p) => p.pestTarget === value)?.id ?? '');
+    };
+
+    const handleProductChange = (id: string) => {
+        setProductId(id);
+        const chosen = products.find((p) => p.id === id);
+        if (chosen && (PEST_OPTIONS as string[]).includes(chosen.pestTarget)) {
+            setPest(chosen.pestTarget as PestType);
+        }
+    };
 
     const toggleSighting = (s: string) => {
         setSightings((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
@@ -41,14 +82,18 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitError(null);
+        if (!selectedProduct) {
+            setSubmitError('Please choose your free product from the list.');
+            return;
+        }
         setSubmitting(true);
         try {
-            const result = await EligibilityService.check(pest, postcode);
+            const result = await EligibilityService.check(pest, postcode, selectedProduct.id);
             if (!result.eligible || !result.product) {
                 setSubmitError(result.reason ?? "Sorry, we can't offer a free product for this request right now.");
                 return;
             }
-            setEligibleProduct(result.product);
+            setEligibleProduct({ name: selectedProduct.name, deliveryCost: selectedProduct.deliveryCost });
         } catch (err) {
             setSubmitError(apiErrorMessage(err, 'Unable to check your eligibility. Please try again.'));
         } finally {
@@ -89,7 +134,7 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
                                 <button
                                     key={p}
                                     type="button"
-                                    onClick={() => setPest(p)}
+                                    onClick={() => handlePestChange(p)}
                                     className={`px-4 py-3.5 rounded-xl border text-sm font-semibold text-left transition-colors cursor-pointer ${pest === p ? 'border-blue-600 bg-blue-50 text-blue-900' : 'border-slate-200 text-slate-700 hover:bg-slate-50'
                                         }`}
                                 >
@@ -97,6 +142,46 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
                                 </button>
                             ))}
                         </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="free-product" className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+                            Your free product
+                        </label>
+                        {productsLoading && <p className="text-sm text-slate-500">Loading products...</p>}
+                        {!productsLoading && productsError && (
+                            <p className="text-sm font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                                We couldn't load our products right now. Please refresh the page or try again shortly.
+                            </p>
+                        )}
+                        {!productsLoading && !productsError && products.length === 0 && (
+                            <p className="text-sm font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                                No products are available at the moment. Please check back soon.
+                            </p>
+                        )}
+                        {!productsLoading && products.length > 0 && (
+                            <div className="space-y-2">
+                                <select
+                                    id="free-product"
+                                    value={productId}
+                                    onChange={(e) => handleProductChange(e.target.value)}
+                                    className="w-full px-4 py-3.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 bg-white focus:outline-none focus:border-blue-600 cursor-pointer"
+                                >
+                                    <option value="">Choose your free product...</option>
+                                    {products.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.name} — £0.00 product + £{p.deliveryCost.toFixed(2)} delivery
+                                        </option>
+                                    ))}
+                                </select>
+                                {selectedProduct?.description && (
+                                    <p className="text-xs text-slate-500 leading-relaxed">{selectedProduct.description}</p>
+                                )}
+                                {!selectedProduct && !products.some((p) => p.pestTarget === pest) && (
+                                    <p className="text-xs text-slate-500">Nothing is set up for "{pest}" yet. Pick a product from the list.</p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div>
@@ -206,7 +291,6 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
                     </div>
 
                     {submitError && <p className="text-sm font-semibold text-red-600">{submitError}</p>}
-                    <PrivacyNoticeShort />
                     <button
                         type="submit"
                         disabled={submitting}
@@ -229,6 +313,7 @@ export const EligibilityPage: React.FC<EligibilityPageProps> = ({ onOrderComplet
                         postcode,
                         pest,
                         location,
+                        productId: selectedProduct?.id,
                     }}
                     product={eligibleProduct}
                     isLoggedIn={!!user}

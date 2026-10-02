@@ -15,6 +15,7 @@ export interface EligibilityDetails {
     postcode: string;
     pest: string;
     location: string;
+    productId?: string;
 }
 
 interface EligibilityModalProps {
@@ -59,6 +60,7 @@ export const EligibilityModal: React.FC<EligibilityModalProps> = ({
         postcode: details.postcode,
         pest: details.pest,
         location: details.location,
+        productId: details.productId,
     });
 
     const handleContinue = async () => {
@@ -102,6 +104,7 @@ export const EligibilityModal: React.FC<EligibilityModalProps> = ({
                 postcode: details.postcode,
                 pest: details.pest,
                 location: details.location,
+                productId: details.productId,
             });
             startSession(result.auth);
             onFinished(result.case);

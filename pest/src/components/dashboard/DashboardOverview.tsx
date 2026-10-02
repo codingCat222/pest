@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { CaseRecord, CustomerNavTab } from '../../types';
 import { Avatar } from '../Avatar';
+import { ProductCard } from './ProductCard';
 import { useAuth } from '../../context/AuthContext';
 import {
   LineChart,
@@ -121,6 +122,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </span>
         </div>
       </div>
+
+      <ProductCard activeCase={activeCase} />
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

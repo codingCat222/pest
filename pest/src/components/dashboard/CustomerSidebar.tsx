@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CustomerNavTab, CaseRecord, PortalPersona } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar } from '../Avatar';
+import { ProductsService } from '../../services/products';
 import {
   LayoutDashboard,
   Compass,
@@ -19,6 +20,7 @@ import {
   ExternalLink,
   ShieldCheck,
   X,
+  Package,
 } from 'lucide-react';
 
 interface CustomerSidebarProps {
@@ -46,6 +48,27 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
 }) => {
   const { user } = useAuth();
   const displayName = user?.fullName ?? activeCase?.customerName ?? '';
+  const [productImage, setProductImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activeCase) {
+      setProductImage(null);
+      return;
+    }
+    let cancelled = false;
+    const wanted = activeCase.productName.trim().toLowerCase();
+    ProductsService.list()
+      .then((products) => {
+        if (cancelled) return;
+        setProductImage(products.find((p) => p.name.trim().toLowerCase() === wanted)?.imageUrl ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setProductImage(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCase?.productName]);
   const [caseDropdownOpen, setCaseDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
@@ -132,6 +155,32 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
               </div>
             )}
           </div>
+          {activeCase && (
+            <button
+              type="button"
+              onClick={() => {
+                onSelectTab('dashboard');
+                setTimeout(() => {
+                  document.getElementById('your-product')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  window.dispatchEvent(new Event('open-product-details'));
+                }, 80);
+              }}
+              className="mt-3 w-full flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 p-2.5 text-left transition-colors cursor-pointer"
+            >
+              <div className="w-10 h-10 rounded-lg bg-brand-green-soft text-brand-green flex items-center justify-center overflow-hidden shrink-0">
+                {productImage ? (
+                  <img src={productImage} alt={activeCase.productName} className="w-full h-full object-cover" />
+                ) : (
+                  <Package className="w-5 h-5" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Your Free Product</div>
+                <div className="text-xs font-semibold text-slate-800 truncate">{activeCase.productName}</div>
+                <div className="text-[10px] text-slate-500">£0.00 · Delivery £{activeCase.deliveryFee.toFixed(2)}</div>
+              </div>
+            </button>
+          )}
         </div>
 
         <nav className="p-3 space-y-4 overflow-y-auto flex-1">

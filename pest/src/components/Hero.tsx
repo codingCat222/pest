@@ -130,6 +130,11 @@ export const Hero: React.FC<HeroProps> = ({
               with additional services available when required.
             </p>
 
+            <p className="mt-4 text-brand-green-light text-sm sm:text-base font-bold max-w-lg leading-snug">
+              Service available in these post codes now: SM, CR, SW, SE, W, BR, EC.
+              <span className="block text-white/80 font-semibold text-xs sm:text-sm mt-1">More coming soon.</span>
+            </p>
+
             <div className="mt-5">
               <button
                 type="button"
