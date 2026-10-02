@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, MapPin } from 'lucide-react';
 import { PestType, ActivityLocation } from '../types';
 
 interface HeroProps {
@@ -130,10 +130,32 @@ export const Hero: React.FC<HeroProps> = ({
               with additional services available when required.
             </p>
 
-            <p className="mt-4 text-brand-green-light text-sm sm:text-base font-bold max-w-lg leading-snug">
-              Service available in these post codes now: SM, CR, SW, SE, W, BR, EC.
-              <span className="block text-white/80 font-semibold text-xs sm:text-sm mt-1">More coming soon.</span>
-            </p>
+            {/* Service area panel */}
+            <div className="mt-5 max-w-lg rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-4 shadow-lg">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand-green" />
+                </span>
+                <MapPin className="w-4 h-4 text-brand-green-light" />
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-white">
+                  Service available now in these postcodes
+                </span>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {['SM', 'CR', 'SW', 'SE', 'W', 'BR', 'EC'].map((code) => (
+                  <span
+                    key={code}
+                    className="min-w-[2.75rem] text-center px-3 py-1.5 rounded-lg bg-brand-green text-white text-sm font-extrabold tracking-wide shadow-sm"
+                  >
+                    {code}
+                  </span>
+                ))}
+                <span className="px-3 py-1.5 rounded-lg border border-dashed border-white/40 text-white/80 text-xs font-semibold">
+                  More coming soon
+                </span>
+              </div>
+            </div>
 
             <div className="mt-5">
               <button
