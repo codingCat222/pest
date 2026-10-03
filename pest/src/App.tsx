@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import {
   CustomerNavTab,
   AdminNavTab,
@@ -56,7 +56,6 @@ import { ActivityReportsService } from './services/activityReports';
 import { AppointmentsService } from './services/appointments';
 import { apiErrorMessage } from './services/format';
 
-// Maps logical page names (used by Navbar/Footer/PestHubPage) to real URL paths.
 const PEST_PAGES = ['rats-mice', 'bedbugs', 'cockroaches', 'foxes', 'ants'];
 export function pageToPath(page: string): string {
   if (page === 'home') return '/';
@@ -67,6 +66,22 @@ export function pageToPath(page: string): string {
   return `/${page}`;
 }
 
+function ScrollToTop() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      const el = document.getElementById(hash.slice(1));
+      if (el) {
+        el.scrollIntoView();
+        return;
+      }
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [pathname, hash]);
+
+  return null;
+}
 
 function EmptyDashboard({ onCheckEligibility }: { onCheckEligibility: () => void }) {
   return (
@@ -105,7 +120,6 @@ function NoCaseNotice({ title, message }: { title: string; message: string }) {
   );
 }
 
-// ---------- Public site layout (navbar + footer wrap every public page) ----------
 function PublicLayout({
   cases,
   setCases,
@@ -242,7 +256,6 @@ function PublicLayout({
   );
 }
 
-// ---------- Customer dashboard layout ----------
 function DashboardLayout({
   cases,
   activeCase,
@@ -412,7 +425,6 @@ function DashboardLayout({
   );
 }
 
-// ---------- Admin operations layout ----------
 function AdminLayout({
   cases,
   activeCase,
@@ -534,7 +546,6 @@ function AdminLayout({
   );
 }
 
-// ---------- Root app ----------
 function AppRoutes() {
   const navigate = useNavigate();
   const [cases, setCases] = useState<CaseRecord[]>([]);
@@ -645,6 +656,7 @@ function AppRoutes() {
 
   return (
     <>
+      <ScrollToTop />
       <Routes>
         <Route
           path="/dashboard/*"
@@ -692,7 +704,7 @@ function AppRoutes() {
               activeCase={activeCase}
               onBookingConfirmed={handleBookingConfirmed}
               onPaymentSettled={reloadCases}
-              onLoginSuccess={() => { /* navigation handled by LoginPage after real auth */ }}
+              onLoginSuccess={() => { }}
             />
           }
         />
