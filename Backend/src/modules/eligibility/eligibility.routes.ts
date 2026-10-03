@@ -5,5 +5,6 @@ const router = Router();
 
 // Public — a prospective customer checks eligibility before creating an account or case.
 router.post('/check', EligibilityController.check);
+router.post('/claim', EligibilityController.claim);
 
 export default router;
